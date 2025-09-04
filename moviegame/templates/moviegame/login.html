@@ -1,0 +1,8 @@
+{% extends "moviegame/base.html" %}
+{% block title %}Login • Movidle{% endblock %}
+{% block content %}
+<div class="card" style="max-width:420px;margin:auto">
+  <h2>Iniciar sesión</h2>
+  <form method="post">{% csrf_token %}{{ form.as_p }}<button>Entrar</button></form>
+</div>
+{% endblock %}

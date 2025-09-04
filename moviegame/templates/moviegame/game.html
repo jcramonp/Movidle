@@ -1,0 +1,97 @@
+{% extends "moviegame/base.html" %}
+{% block title %}Juego • Movidle{% endblock %}
+{% block head %}
+<script>
+function getCookie(name){
+  const v = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+let typingTimer, lastQ="";
+async function autocomplete(q){
+  if(!q || q.length<2) return [];
+  const r = await fetch(`/api/autocomplete/?q=${encodeURIComponent(q)}`);
+  const j = await r.json();
+  return j.results || [];
+}
+async function enviar(peliculaId, titulo){
+  const data = new URLSearchParams();
+  if(peliculaId) data.append("pelicula_id", peliculaId);
+  if(titulo) data.append("titulo", titulo);
+  const r = await fetch("{% url 'moviegame:api_intentos' %}", {
+    method: "POST",
+    headers: {"X-CSRFToken": getCookie("csrftoken")},
+    body: data
+  });
+  const j = await r.json();
+  if (r.ok){
+    addRow(j);
+    document.getElementById("intentos-restantes").innerText = j.intentosRestantes;
+    if (j.estadoPartida !== "EN_CURSO"){
+      document.getElementById("estado").innerText = j.estadoPartida === "GANADA" ? "¡GANASTE! 🎉" : "Perdiste 😞";
+    }
+  } else {
+    alert(j.error || "Error");
+  }
+}
+function addRow(f){
+  const row = document.createElement("div"); row.className="row";
+  const mk=(txt,cls)=>{const c=document.createElement("div");c.className=`cell ${cls}`;c.textContent=txt;return c;}
+  row.appendChild(mk("Género", f.colorGenero));
+  row.appendChild(mk("Año", f.colorAnio));
+  row.appendChild(mk("Director", f.colorDirector));
+  row.appendChild(mk("Actores", f.colorActores));
+  document.getElementById("grid").appendChild(row);
+}
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("titulo");
+  const list = document.getElementById("sugerencias");
+  input.addEventListener("input", async (e)=>{
+    const q = e.target.value.trim();
+    window.clearTimeout(typingTimer);
+    typingTimer = window.setTimeout(async()=>{
+      if (q===lastQ) return; lastQ=q;
+      const res = await autocomplete(q);
+      list.innerHTML="";
+      res.forEach(it=>{
+        const opt = document.createElement("div"); opt.className="cell";
+        opt.textContent = `${it.titulo} (${it.anio})`;
+        opt.onclick = ()=>{ input.value = it.titulo; list.innerHTML=""; enviar(it.id, null); };
+        list.appendChild(opt);
+      });
+    }, 250);
+  });
+  document.getElementById("form-intento").addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const t = input.value.trim();
+    if (t) enviar(null, t);
+  });
+});
+</script>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Película del día</h2>
+  <p>Intentos restantes: <strong id="intentos-restantes">{{ intentos_restantes }}</strong> • Estado: <strong id="estado">{{ partida.estado }}</strong></p>
+
+  <form id="form-intento" class="row" style="align-items:center;gap:.5rem">
+    {% csrf_token %}
+    <input id="titulo" placeholder="Escribe un título de película…" autocomplete="off" style="flex:1" />
+    <button>Enviar intento</button>
+  </form>
+  <div id="sugerencias" class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:.5rem"></div>
+
+  <h3 style="margin-top:1rem">Intentos</h3>
+  <div id="grid" class="grid">
+    {% for i in intentos %}
+      <div class="row">
+        <div class="cell {{ i.feedback.color_genero }}">Género</div>
+        <div class="cell {{ i.feedback.color_anio }}">Año</div>
+        <div class="cell {{ i.feedback.color_direccion }}">Director</div>
+        <div class="cell {{ i.feedback.color_actores }}">Actores</div>
+      </div>
+    {% empty %}
+      <p class="muted">Aún no hay intentos.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
