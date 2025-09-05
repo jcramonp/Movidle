@@ -1,5 +1,6 @@
 {% extends "moviegame/base.html" %}
 {% block title %}Estadísticas • Movidle{% endblock %}
+<p>Película del día (secreta): <b>{{ secreta.titulo }}</b> ({{ secreta.anio }})</p>
 {% block content %}
 <div class="card">
   <h2>Estadísticas de {{ jugador.user.username }}</h2>

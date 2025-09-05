@@ -88,3 +88,14 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Feedback intento {self.intento_id} ({'✔' if self.es_correcto else '✗'})"
+
+class PeliculaDelDia(models.Model):
+    fecha = models.DateField(unique=True, db_index=True, default=timezone.localdate)
+    pelicula = models.ForeignKey(Pelicula, on_delete=models.PROTECT, related_name="seleccionada_como_del_dia")
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-fecha"]
+
+    def __str__(self):
+        return f"{self.fecha} → {self.pelicula}"

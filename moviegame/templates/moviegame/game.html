@@ -6,13 +6,17 @@ function getCookie(name){
   const v = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
   return v ? v.pop() : '';
 }
-let typingTimer, lastQ="";
-async function autocomplete(q){
-  if(!q || q.length<2) return [];
-  const r = await fetch(`/api/autocomplete/?q=${encodeURIComponent(q)}`);
-  const j = await r.json();
-  return j.results || [];
+
+function mostrarRevelacion(titulo, anio, poster){
+  const box = document.getElementById("reveal");
+  if (!titulo) { box.style.display = "none"; return; }
+  box.style.display = "block";
+  document.getElementById("reveal-title").innerText = `${titulo} (${anio})`;
+  const img = document.getElementById("reveal-poster");
+  if (poster) { img.src = poster; img.style.display = "block"; }
+  else { img.style.display = "none"; }
 }
+
 async function enviar(peliculaId, titulo){
   const data = new URLSearchParams();
   if(peliculaId) data.append("pelicula_id", peliculaId);
@@ -24,15 +28,18 @@ async function enviar(peliculaId, titulo){
   });
   const j = await r.json();
   if (r.ok){
-    addRow(j);
-    document.getElementById("intentos-restantes").innerText = j.intentosRestantes;
-    if (j.estadoPartida !== "EN_CURSO"){
+    if (j.numero_intento){ addRow(j); } // si fue un intento válido
+    document.getElementById("intentos-restantes").innerText = j.intentosRestantes ?? 0;
+    if (j.estadoPartida && j.estadoPartida !== "EN_CURSO"){
       document.getElementById("estado").innerText = j.estadoPartida === "GANADA" ? "¡GANASTE! 🎉" : "Perdiste 😞";
+      mostrarRevelacion(j.revealTitle, j.revealYear, j.revealPoster);
     }
+    if (j.error){ console.log(j.error); }
   } else {
     alert(j.error || "Error");
   }
 }
+
 function addRow(f){
   const row = document.createElement("div"); row.className="row";
   const mk=(txt,cls)=>{const c=document.createElement("div");c.className=`cell ${cls}`;c.textContent=txt;return c;}
@@ -94,4 +101,25 @@ document.addEventListener("DOMContentLoaded", () => {
     {% endfor %}
   </div>
 </div>
+<h3 style="margin-top:1rem">Intentos</h3>
+<div id="grid" class="grid">
+  {% for i in intentos %}
+    <div class="row">
+      <div class="cell {{ i.feedback.color_genero }}">Género</div>
+      <div class="cell {{ i.feedback.color_anio }}">Año</div>
+      <div class="cell {{ i.feedback.color_direccion }}">Director</div>
+      <div class="cell {{ i.feedback.color_actores }}">Actores</div>
+    </div>
+  {% empty %}
+    <p class="muted">Aún no hay intentos.</p>
+  {% endfor %}
+</div>
+
+<!-- ► Revelación: SOLO visible al finalizar -->
+<div id="reveal" class="card" style="margin-top:1rem; display: {% if reveal %}block{% else %}none{% endif %};">
+  <h3>La película del día era:</h3>
+  <p id="reveal-title">{% if reveal %}{{ reveal.titulo }} ({{ reveal.anio }}){% endif %}</p>
+  <img id="reveal-poster" src="{% if reveal %}{{ reveal.poster }}{% endif %}" alt="" style="max-height:200px; border-radius:.5rem; {% if not reveal or not reveal.poster %}display:none{% endif %}">
+</div>
+
 {% endblock %}

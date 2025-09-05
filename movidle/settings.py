@@ -27,10 +27,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# movidle/settings.py
+
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
+
+from dotenv import load_dotenv
+load_dotenv()
+
+import os
+OMDB_API_KEY = os.getenv("OMDB_API_KEY", "")
 
 
 # Application definition

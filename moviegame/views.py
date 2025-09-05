@@ -26,13 +26,27 @@ def game_view(request):
     jugador = request.user.jugador
     fecha = timezone.localdate()
     secreta = seleccionar_pelicula_diaria(fecha)
-    partida, _ = Partida.objects.get_or_create(jugador=jugador, fecha=fecha, defaults={"pelicula_secreta": secreta})
+    partida, _ = Partida.objects.get_or_create(
+        jugador=jugador, fecha=fecha, defaults={"pelicula_secreta": secreta}
+    )
     intentos = partida.intentos.select_related("feedback", "pelicula_adivinada").all()
+
+    # ► SOLO revelar si la partida terminó
+    reveal = None
+    if partida.estado != EstadoPartida.EN_CURSO:
+        reveal = {
+            "titulo": partida.pelicula_secreta.titulo,
+            "anio": partida.pelicula_secreta.anio,
+            "poster": partida.pelicula_secreta.poster_url,
+        }
+
     return render(request, "moviegame/game.html", {
         "partida": partida,
         "intentos": intentos,
         "intentos_restantes": max(0, partida.intentos_maximos - intentos.count()),
+        "reveal": reveal,   # ← clave nueva
     })
+
 
 @login_required
 def stats_view(request):
@@ -55,28 +69,43 @@ def _es_staff(u): return u.is_staff
 @user_passes_test(_es_staff)
 def admin_dashboard(request):
     hoy = timezone.localdate()
+    secreta = seleccionar_pelicula_diaria(hoy)
+
     total_intentos = Intento.objects.filter(partida__fecha=hoy).count()
     total_partidas = Partida.objects.filter(fecha=hoy).count()
-    tasa_acierto = 0
     win = Partida.objects.filter(fecha=hoy, estado=EstadoPartida.GANADA).count()
-    if total_partidas:
-        tasa_acierto = round(win * 100 / total_partidas, 1)
+    tasa_acierto = round(win * 100 / total_partidas, 1) if total_partidas else 0
     top_pelis = Intento.objects.filter(partida__fecha=hoy) \
                                .values("pelicula_adivinada__titulo") \
                                .annotate(cnt=Count("id")).order_by("-cnt")[:10]
     return render(request, "moviegame/admin_dashboard.html", {
         "hoy": hoy, "total_intentos": total_intentos,
         "total_partidas": total_partidas, "tasa_acierto": tasa_acierto,
-        "top_pelis": top_pelis,
+        "top_pelis": top_pelis, "secreta": secreta,
     })
+
 
 # --- API ---
 @login_required
 @require_POST
 def api_registrar_intento(request):
+    jugador = request.user.jugador
+    fecha = timezone.localdate()
+
+    # Si la partida ya estaba finalizada, respondemos con la revelación.
+    partida_existente = Partida.objects.filter(jugador=jugador, fecha=fecha).select_related("pelicula_secreta").first()
+    if partida_existente and partida_existente.estado != EstadoPartida.EN_CURSO:
+        s = partida_existente.pelicula_secreta
+        return JsonResponse({
+            "error": "La partida del día ya finalizó.",
+            "estadoPartida": partida_existente.estado,
+            "revealTitle": s.titulo, "revealYear": s.anio, "revealPoster": s.poster_url,
+            "intentosRestantes": 0,
+        }, status=200)
+
+    # Resolver la película ingresada
     pid = request.POST.get("pelicula_id")
     titulo = request.POST.get("titulo")
-
     if pid:
         peli = get_object_or_404(Pelicula, id=pid)
     elif titulo:
@@ -87,10 +116,29 @@ def api_registrar_intento(request):
     else:
         return HttpResponseBadRequest("Faltan parámetros")
 
+    # Intentar registrar
     try:
-        res = registrar_intento(request.user.jugador, peli)
+        res = registrar_intento(jugador, peli)
     except ValueError as e:
+        # Puede ser que justo quedó PERDIDA por máximo de intentos;
+        # devolvemos la revelación si ya terminó.
+        partida = Partida.objects.get(jugador=jugador, fecha=fecha)
+        if partida.estado != EstadoPartida.EN_CURSO:
+            s = partida.pelicula_secreta
+            return JsonResponse({
+                "error": str(e),
+                "estadoPartida": partida.estado,
+                "revealTitle": s.titulo, "revealYear": s.anio, "revealPoster": s.poster_url,
+                "intentosRestantes": 0,
+            }, status=200)
         return JsonResponse({"error": str(e)}, status=400)
+
+    # Si terminó (ganó o perdió), incluir la revelación
+    reveal = {}
+    if res.estado_partida != EstadoPartida.EN_CURSO:
+        partida = Partida.objects.get(jugador=jugador, fecha=fecha)
+        s = partida.pelicula_secreta
+        reveal = {"revealTitle": s.titulo, "revealYear": s.anio, "revealPoster": s.poster_url}
 
     return JsonResponse({
         "intento_id": res.intento_id,
@@ -102,7 +150,9 @@ def api_registrar_intento(request):
         "esCorrecto": res.es_correcto,
         "estadoPartida": res.estado_partida,
         "intentosRestantes": res.intentos_restantes,
+        **reveal,  # ← solo si aplica
     })
+
 
 @login_required
 def api_autocomplete(request):
