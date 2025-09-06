@@ -1,0 +1,17 @@
+{% extends "moviegame/base.html" %}
+{% load static %}
+{% block title %}Estadísticas • Movidle{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Estadísticas de {{ jugador.user.username }}</h2>
+  <p>Ganadas: <b>{{ ganadas }}</b> · Perdidas: <b>{{ perdidas }}</b> · Racha actual: <b>{{ jugador.racha_actual }}</b> · Racha máxima: <b>{{ jugador.racha_maxima }}</b></p>
+  <h3>Distribución de intentos (victorias)</h3>
+  <div class="grid" style="grid-template-columns:repeat(6,1fr)">
+    {% for b in distribucion %}
+      <div class="cell">{{ b.numero_intento }}: {{ b.cnt }}</div>
+    {% empty %}
+      <p class="muted">Sin victorias aún.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

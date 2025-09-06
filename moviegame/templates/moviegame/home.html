@@ -1,0 +1,10 @@
+{% extends "moviegame/base.html" %}
+{% load static %}
+{% block title %}Movidle{% endblock %}
+{% block content %}
+  <section class="hero">
+    <img class="hero-logo" src="{% static 'moviegame/img/logo.png' %}" alt="Movidle">
+    <p class="hero-tag">10 guesses, 1000 movies<br/>Will you win today?</p>
+    <a class="btn red big" href="{% url 'moviegame:game' %}">Play</a>
+  </section>
+{% endblock %}
