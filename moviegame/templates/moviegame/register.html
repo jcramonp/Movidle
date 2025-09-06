@@ -1,8 +1,45 @@
 {% extends "moviegame/base.html" %}
-{% block title %}Registro • Movidle{% endblock %}
+{% block title %}Crear cuenta • Movidle{% endblock %}
+
 {% block content %}
-<div class="card" style="max-width:420px;margin:auto">
+<section class="card red form-card">
   <h2>Crear cuenta</h2>
-  <form method="post">{% csrf_token %}{{ form.as_p }}<button>Registrarme</button></form>
-</div>
+
+  <form method="post" action="{% url 'moviegame:register' %}">
+    {% csrf_token %}
+
+    <!-- Usuario -->
+    <label for="id_username">Usuario</label>
+    <input id="id_username" name="username" type="text" required autofocus
+           placeholder="Tu usuario"
+           value="{{ form.data.username|default_if_none:'' }}">
+    {% for e in form.username.errors %}
+      <div class="hint">{{ e }}</div>
+    {% endfor %}
+
+    <!-- Contraseña -->
+    <label for="id_password1">Contraseña</label>
+    <input id="id_password1" name="password1" type="password" required
+           placeholder="••••••••" autocomplete="new-password">
+    {% for e in form.password1.errors %}
+      <div class="hint">{{ e }}</div>
+    {% endfor %}
+
+    <!-- Confirmación -->
+    <label for="id_password2">Confirmar contraseña</label>
+    <input id="id_password2" name="password2" type="password" required
+           placeholder="Repite tu contraseña" autocomplete="new-password">
+    {% for e in form.password2.errors %}
+      <div class="hint">{{ e }}</div>
+    {% endfor %}
+
+    {% if form.non_field_errors %}
+      <div class="hint">{{ form.non_field_errors|join:", " }}</div>
+    {% endif %}
+
+    <div class="actions">
+      <button type="submit" class="btn">Registrarme</button>
+    </div>
+  </form>
+</section>
 {% endblock %}

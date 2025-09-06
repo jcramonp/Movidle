@@ -1,8 +1,28 @@
 {% extends "moviegame/base.html" %}
-{% block title %}Login • Movidle{% endblock %}
+{% block title %}Iniciar sesión • Movidle{% endblock %}
+
 {% block content %}
-<div class="card" style="max-width:420px;margin:auto">
+<section class="card red form-card">
   <h2>Iniciar sesión</h2>
-  <form method="post">{% csrf_token %}{{ form.as_p }}<button>Entrar</button></form>
-</div>
+
+  <form method="post" action="{% url 'moviegame:login' %}">
+    {% csrf_token %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+    <label for="id_username">Usuario</label>
+    <input id="id_username" name="username" type="text" required autofocus
+           placeholder="Tu usuario" value="{{ form.data.username|default_if_none:'' }}">
+
+    <label for="id_password">Contraseña</label>
+    <input id="id_password" name="password" type="password" required placeholder="••••••••">
+
+    {% if form.non_field_errors %}
+      <div class="hint">{{ form.non_field_errors|join:", " }}</div>
+    {% endif %}
+
+    <div class="actions">
+      <button type="submit" class="btn">Entrar</button>
+    </div>
+  </form>
+</section>
 {% endblock %}

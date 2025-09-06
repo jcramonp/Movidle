@@ -5,4 +5,4 @@ class MoviegameConfig(AppConfig):
     name = "moviegame"
 
     def ready(self):
-        from . import signals  # noqa: F401
+        from . import signals

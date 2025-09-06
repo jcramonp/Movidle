@@ -1,40 +1,45 @@
+{% load static %}
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>{% block title %}Movidle{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body{font-family:system-ui,Arial,sans-serif;margin:0;padding:1rem;background:#0f172a;color:#e2e8f0}
-    header,footer{display:flex;justify-content:space-between;align-items:center}
-    a{color:#93c5fd;text-decoration:none}
-    .grid{display:grid;gap:.5rem}
-    .row{display:flex;gap:.5rem}
-    .cell{min-width:90px;padding:.6rem .8rem;border-radius:.5rem;text-align:center;background:#1f2937}
-    .VERDE{background:#16a34a}.AMARILLO{background:#f59e0b}.GRIS{background:#334155}
-    .card{background:#111827;border:1px solid #1f2937;border-radius:.75rem;padding:1rem}
-    input,button{padding:.6rem .8rem;border-radius:.5rem;border:1px solid #334155;background:#0b1220;color:#e2e8f0}
-    .muted{color:#94a3b8}
-  </style>
+  <title>{% block title %}Movidle{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'moviegame/app.css' %}">
   {% block head %}{% endblock %}
 </head>
-<body>
-<header>
-  <h1>🎬 Movidle</h1>
-  <nav>
-    {% if user.is_authenticated %}
-      <a href="{% url 'moviegame:game' %}">Juego</a> |
-      <a href="{% url 'moviegame:stats' %}">Estadísticas</a> |
-      {% if user.is_staff %}<a href="{% url 'moviegame:admin_dashboard' %}">Panel</a> |{% endif %}
-      <a href="{% url 'moviegame:logout' %}">Salir</a>
-    {% else %}
-      <a href="{% url 'moviegame:login' %}">Entrar</a> |
-      <a href="{% url 'moviegame:register' %}">Registro</a>
-    {% endif %}
-  </nav>
+<body class="bg">
+  <header class="header">
+  {% if navbar_mode == 'admin' %}
+    <!-- Navbar reducida para el panel -->
+    <a class="brand-btn" href="{% url 'moviegame:admin_dashboard' %}">panel</a>
+    <nav class="nav">
+      <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
+        {% csrf_token %}<button type="submit" class="btn">Salir</button>
+      </form>
+    </nav>
+  {% else %}
+    <!-- Navbar normal del sitio -->
+    <a class="brand-btn" href="{% url 'moviegame:home' %}">movidle</a>
+    <nav class="nav">
+      <a class="btn" href="{% url 'moviegame:stats' %}">Estadísticas</a>
+      <a class="btn" href="{% url 'moviegame:howto' %}">Cómo jugar</a>
+      {% if user.is_staff %}<a class="btn" href="{% url 'moviegame:admin_dashboard' %}">Panel</a>{% endif %}
+      {% if user.is_authenticated %}
+        <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
+          {% csrf_token %}<button type="submit" class="btn">Salir</button>
+        </form>
+      {% else %}
+        <a class="btn" href="{% url 'moviegame:login' %}">Entrar</a>
+        <a class="btn" href="{% url 'moviegame:register' %}">Registro</a>
+      {% endif %}
+    </nav>
+  {% endif %}
 </header>
-<hr/>
-<main>{% block content %}{% endblock %}</main>
-<footer class="muted" style="margin-top:2rem">Movidle • Django</footer>
+
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
 </body>
 </html>

@@ -1,125 +1,124 @@
 {% extends "moviegame/base.html" %}
-{% block title %}Juego • Movidle{% endblock %}
+{% block title %}Play • Movidle{% endblock %}
 {% block head %}
 <script>
-function getCookie(name){
-  const v = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
-  return v ? v.pop() : '';
+function getCookie(name){const v=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');return v?v.pop():"";}
+
+async function autocomplete(q){
+  if(!q || q.length<1) return [];
+  const r = await fetch(`/api/autocomplete/?q=${encodeURIComponent(q)}&limit=24`);
+  const j = await r.json(); return j.results || [];
 }
 
-function mostrarRevelacion(titulo, anio, poster){
-  const box = document.getElementById("reveal");
-  if (!titulo) { box.style.display = "none"; return; }
-  box.style.display = "block";
-  document.getElementById("reveal-title").innerText = `${titulo} (${anio})`;
-  const img = document.getElementById("reveal-poster");
-  if (poster) { img.src = poster; img.style.display = "block"; }
-  else { img.style.display = "none"; }
+function renderSuggest(list){
+  const c = document.getElementById("sugerencias"); c.innerHTML="";
+  list.forEach(it=>{
+    const d = document.createElement("div"); d.className="opt";
+    d.textContent = `${it.titulo} (${it.anio})`;
+    d.onclick = ()=>{ c.innerHTML=""; enviarIntento(it.id, it.titulo); };
+    c.appendChild(d);
+  });
 }
 
-async function enviar(peliculaId, titulo){
+function tile(label, color, arrow, valueText){
+  const a = arrow==="UP"?"▲":(arrow==="DOWN"?"▼":"");
+  return `
+    <div class="tile ${color}">
+      <div class="t-label">${label}</div>
+      <div class="t-sub">${valueText || ""} <span class="t-arrow">${a}</span></div>
+    </div>`;
+}
+
+function num(n){return (n==null)? "" : n.toLocaleString();}
+function minutes(n){return (n==null)? "" : `${n} min`;}
+function rating(n){return (n==null)? "" : Number(n).toFixed(1);}
+
+function addCard(titulo, j){
+  const card = document.createElement("div"); card.className="guess-card";
+  const tiles =
+    tile("Año", j.colorAño, j.arrowAño, j.valAño) +
+    tile("Popularidad (votos)", j.colorPopularidad, j.arrowPopularidad, num(j.valPopularidad)) +
+    tile("Géneros", j.colorGeneros, "", j.valGeneros) +
+    tile("Duración", j.colorDuración, j.arrowDuración, minutes(j.valDuración)) +
+    tile("Director", j.colorDirector, "", j.valDirector) +
+    tile("Actores", j.colorActores, "", j.valActores) +
+    tile("IMDb Rating", j.colorRating, "", rating(j.valRating));
+  card.innerHTML = `<div class="g-head">${titulo}</div><div class="tiles">${tiles}</div>`;
+  document.getElementById("guesses").prepend(card);
+}
+
+async function enviarIntento(id, tituloMostrado){
+  const input = document.getElementById("titulo");
   const data = new URLSearchParams();
-  if(peliculaId) data.append("pelicula_id", peliculaId);
-  if(titulo) data.append("titulo", titulo);
+  if(id) data.append("pelicula_id", id);
+  if(!id && input.value.trim()) data.append("titulo", input.value.trim());
+
   const r = await fetch("{% url 'moviegame:api_intentos' %}", {
-    method: "POST",
-    headers: {"X-CSRFToken": getCookie("csrftoken")},
-    body: data
+    method:"POST", headers:{"X-CSRFToken":getCookie("csrftoken")}, body:data
   });
   const j = await r.json();
-  if (r.ok){
-    if (j.numero_intento){ addRow(j); } // si fue un intento válido
-    document.getElementById("intentos-restantes").innerText = j.intentosRestantes ?? 0;
-    if (j.estadoPartida && j.estadoPartida !== "EN_CURSO"){
-      document.getElementById("estado").innerText = j.estadoPartida === "GANADA" ? "¡GANASTE! 🎉" : "Perdiste 😞";
-      mostrarRevelacion(j.revealTitle, j.revealYear, j.revealPoster);
-    }
-    if (j.error){ console.log(j.error); }
-  } else {
-    alert(j.error || "Error");
+  if(!r.ok){ alert(j.error || "Error"); return; }
+
+  if (j.numero_intento){
+    document.getElementById("guess-counter").innerText = `Guess ${j.numero_intento} de {{ max_intentos }}`;
+    const titulo = tituloMostrado || input.value.trim() || "Guess";
+    addCard(titulo, j);
+    input.value="";
   }
+  if (j.estadoPartida && j.estadoPartida !== "EN_CURSO"){
+    openResult(j.revealTitle, j.revealAño, j.revealPoster);
+    input.disabled = true; document.getElementById("btn-buscar").disabled = true;
+  }
+  if (j.error){ console.log(j.error); }
 }
 
-function addRow(f){
-  const row = document.createElement("div"); row.className="row";
-  const mk=(txt,cls)=>{const c=document.createElement("div");c.className=`cell ${cls}`;c.textContent=txt;return c;}
-  row.appendChild(mk("Género", f.colorGenero));
-  row.appendChild(mk("Año", f.colorAnio));
-  row.appendChild(mk("Director", f.colorDirector));
-  row.appendChild(mk("Actores", f.colorActores));
-  document.getElementById("grid").appendChild(row);
+function openResult(titulo, anio, poster){
+  const m = document.getElementById("modal-result");
+  document.getElementById("res-title").innerText = `${titulo} (${anio})`;
+  const img = document.getElementById("res-poster");
+  if (poster){ img.src = poster; img.style.display="block"; } else { img.style.display="none"; }
+  m.classList.remove("hidden");
 }
-document.addEventListener("DOMContentLoaded", () => {
+
+document.addEventListener("DOMContentLoaded", ()=>{
   const input = document.getElementById("titulo");
-  const list = document.getElementById("sugerencias");
-  input.addEventListener("input", async (e)=>{
-    const q = e.target.value.trim();
-    window.clearTimeout(typingTimer);
-    typingTimer = window.setTimeout(async()=>{
-      if (q===lastQ) return; lastQ=q;
-      const res = await autocomplete(q);
-      list.innerHTML="";
-      res.forEach(it=>{
-        const opt = document.createElement("div"); opt.className="cell";
-        opt.textContent = `${it.titulo} (${it.anio})`;
-        opt.onclick = ()=>{ input.value = it.titulo; list.innerHTML=""; enviar(it.id, null); };
-        list.appendChild(opt);
-      });
-    }, 250);
+  input?.addEventListener("input", async (e)=> renderSuggest(await autocomplete(e.target.value.trim())));
+  document.getElementById("form-intento")?.addEventListener("submit", (e)=>{
+    e.preventDefault(); if (input.value.trim()) enviarIntento(null, null);
   });
-  document.getElementById("form-intento").addEventListener("submit", (e)=>{
-    e.preventDefault();
-    const t = input.value.trim();
-    if (t) enviar(null, t);
+  document.querySelector("#modal-result .close")?.addEventListener("click", ()=>{
+    document.getElementById("modal-result").classList.add("hidden");
   });
 });
 </script>
 {% endblock %}
+
 {% block content %}
-<div class="card">
-  <h2>Película del día</h2>
-  <p>Intentos restantes: <strong id="intentos-restantes">{{ intentos_restantes }}</strong> • Estado: <strong id="estado">{{ partida.estado }}</strong></p>
-
-  <form id="form-intento" class="row" style="align-items:center;gap:.5rem">
-    {% csrf_token %}
-    <input id="titulo" placeholder="Escribe un título de película…" autocomplete="off" style="flex:1" />
-    <button>Enviar intento</button>
-  </form>
-  <div id="sugerencias" class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:.5rem"></div>
-
-  <h3 style="margin-top:1rem">Intentos</h3>
-  <div id="grid" class="grid">
-    {% for i in intentos %}
-      <div class="row">
-        <div class="cell {{ i.feedback.color_genero }}">Género</div>
-        <div class="cell {{ i.feedback.color_anio }}">Año</div>
-        <div class="cell {{ i.feedback.color_direccion }}">Director</div>
-        <div class="cell {{ i.feedback.color_actores }}">Actores</div>
-      </div>
-    {% empty %}
-      <p class="muted">Aún no hay intentos.</p>
-    {% endfor %}
-  </div>
-</div>
-<h3 style="margin-top:1rem">Intentos</h3>
-<div id="grid" class="grid">
-  {% for i in intentos %}
-    <div class="row">
-      <div class="cell {{ i.feedback.color_genero }}">Género</div>
-      <div class="cell {{ i.feedback.color_anio }}">Año</div>
-      <div class="cell {{ i.feedback.color_direccion }}">Director</div>
-      <div class="cell {{ i.feedback.color_actores }}">Actores</div>
+  {% if no_game_msg %}
+    <div class="card"><p class="muted">{{ no_game_msg }}</p></div>
+  {% else %}
+    <div class="play-top">
+      <div id="guess-counter">Guess {{ guess_now }} de {{ max_intentos }}</div>
+      <form id="form-intento" class="search">
+        {% csrf_token %}
+        <input id="titulo" placeholder="Type a guess here…" autocomplete="off" />
+        <button id="btn-buscar" class="icon-btn" title="Search">🔍</button>
+      </form>
+      <div id="sugerencias" class="suggest"></div>
     </div>
-  {% empty %}
-    <p class="muted">Aún no hay intentos.</p>
-  {% endfor %}
-</div>
 
-<!-- ► Revelación: SOLO visible al finalizar -->
-<div id="reveal" class="card" style="margin-top:1rem; display: {% if reveal %}block{% else %}none{% endif %};">
-  <h3>La película del día era:</h3>
-  <p id="reveal-title">{% if reveal %}{{ reveal.titulo }} ({{ reveal.anio }}){% endif %}</p>
-  <img id="reveal-poster" src="{% if reveal %}{{ reveal.poster }}{% endif %}" alt="" style="max-height:200px; border-radius:.5rem; {% if not reveal or not reveal.poster %}display:none{% endif %}">
-</div>
+    <div id="guesses" class="guesses"></div>
 
+    <!-- Modal resultado (solo cuando termina) -->
+    <div id="modal-result" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3>Today's movie is…</h3>
+          <button class="close">×</button>
+        </div>
+        <img id="res-poster" style="max-height:220px;border-radius:12px;display:none"/>
+        <h3 id="res-title" style="margin-top:8px"></h3>
+      </div>
+    </div>
+  {% endif %}
 {% endblock %}

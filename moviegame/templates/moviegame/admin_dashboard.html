@@ -1,17 +1,47 @@
 {% extends "moviegame/base.html" %}
-{% block title %}Estadísticas • Movidle{% endblock %}
-<p>Película del día (secreta): <b>{{ secreta.titulo }}</b> ({{ secreta.anio }})</p>
+{% block title %}Panel • Movidle{% endblock %}
+{% block head %}
+<script>
+function getCookie(name){const v=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');return v?v.pop():"";}
+async function autocomplete(q){
+  if(!q || q.length<1) return [];
+  const r = await fetch(`/api/autocomplete/?q=${encodeURIComponent(q)}&limit=20`);
+  const j = await r.json(); return j.results || [];
+}
+function renderSuggest(list){
+  const c = document.getElementById("sugerencias"); c.innerHTML="";
+  list.forEach(it=>{
+    const d = document.createElement("div"); d.className="opt";
+    d.textContent = `${it.titulo} (${it.anio})`;
+    d.onclick = ()=>{ setDaily(it.id); };
+    c.appendChild(d);
+  });
+}
+async function setDaily(id){
+  const data = new URLSearchParams(); data.append("pelicula_id", id);
+  const r = await fetch("{% url 'moviegame:admin_set_daily' %}", {
+    method:"POST", headers:{"X-CSRFToken":getCookie("csrftoken")}, body:data
+  });
+  if(r.redirected){ window.location = r.url; } else { location.reload(); }
+}
+document.addEventListener("DOMContentLoaded", ()=>{
+  const input = document.getElementById("titulo");
+  input?.addEventListener("input", async (e)=>{ renderSuggest(await autocomplete(e.target.value.trim())); });
+});
+</script>
+{% endblock %}
 {% block content %}
-<div class="card">
-  <h2>Estadísticas de {{ jugador.user.username }}</h2>
-  <p>Ganadas: <b>{{ ganadas }}</b> · Perdidas: <b>{{ perdidas }}</b> · Racha actual: <b>{{ jugador.racha_actual }}</b> · Racha máxima: <b>{{ jugador.racha_maxima }}</b></p>
-  <h3>Distribución de intentos (victorias)</h3>
-  <div class="grid" style="grid-template-columns:repeat(6,1fr)">
-    {% for b in distribucion %}
-      <div class="cell">{{ b.numero_intento }}: {{ b.cnt }}</div>
-    {% empty %}
-      <p class="muted">Sin victorias aún.</p>
-    {% endfor %}
+<div class="card red">
+  <h2>Película del día</h2>
+  {% if secreta %}
+    <p><b>{{ secreta.titulo }}</b> ({{ secreta.anio }})</p>
+  {% else %}
+    <p class="muted">Aún no hay película seleccionada para hoy.</p>
+  {% endif %}
+
+  <div class="row" style="margin-top:8px">
+    <input id="titulo" placeholder="Buscar película para fijar hoy…" autocomplete="off" style="flex:1">
   </div>
+  <div id="sugerencias" class="suggest"></div>
 </div>
 {% endblock %}

@@ -1,0 +1,17 @@
+{% extends "moviegame/base.html" %}
+{% block title %}Cómo jugar • Movidle{% endblock %}
+{% block content %}
+  <section class="card narrow">
+    <h2>Cómo jugar</h2>
+    <p>Adivina la película en 10 intentos. Cada intento revela atributos con colores:</p>
+    <ul class="list">
+      <li><b>Año:</b> Verde exacto, Amarillo ±5, Gris resto. ▲ si tu intento es mayor, ▼ si menor.</li>
+      <li><b>Popularidad (votos IMDb):</b> Verde exacto, Amarillo ±100 000, Gris resto. ▲/▼ según votos.</li>
+      <li><b>Géneros:</b> Verde si comparte alguno de los 3 principales.</li>
+      <li><b>Duración:</b> Verde exacta, Amarillo ±30 min, Gris resto. ▲/▼ según minutos.</li>
+      <li><b>Director:</b> Verde si coincide.</li>
+      <li><b>Actores:</b> Verde si coincide alguno de los 3 principales.</li>
+      <li><b>IMDb Rating:</b> Verde exacto, Amarillo ±1.0, Gris resto.</li>
+    </ul>
+  </section>
+{% endblock %}
