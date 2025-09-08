@@ -57,12 +57,12 @@ def _norm(s: str | None) -> str:
     return s.strip().lower()
 
 def _arrow(a: int | float | None, b: int | float | None) -> str:
-    # retorna "UP" si a > b, "DOWN" si a < b, "" si igual o datos faltan
+    # retorna "UP" si debes SUBIR para llegar a b, "DOWN" si debes BAJAR
     if a is None or b is None:
         return ""
-    if a > b:
+    if b > a:        # objetivo (b) es MAYOR que el intento (a) -> sube
         return "UP"
-    if a < b:
+    if b < a:        # objetivo (b) es MENOR que el intento (a) -> baja
         return "DOWN"
     return ""
 
@@ -108,7 +108,16 @@ def _color_popularidad_por_votos(adiv: Pelicula, sec: Pelicula) -> tuple[ColorCa
 def _color_generos(adiv: Pelicula, sec: Pelicula) -> ColorCategoria:
     a = set(_norm(x) for x in adiv.lista_generos())
     b = set(_norm(x) for x in sec.lista_generos())
-    return ColorCategoria.VERDE if (a & b) else ColorCategoria.GRIS  # solo VERDE/GRIS
+
+    inter = a & b
+    if not inter:
+        return ColorCategoria.GRIS
+    # VERDE solo si TODOS los géneros coinciden (conjuntos iguales)
+    if a == b:
+        return ColorCategoria.VERDE
+    # Comparten al menos uno pero no todos -> AMARILLO
+    return ColorCategoria.AMARILLO
+
 
 def _color_duracion(adiv: Pelicula, sec: Pelicula) -> tuple[ColorCategoria, str]:
     da = adiv.duracion_min or 0
@@ -122,7 +131,13 @@ def _color_director(adiv: Pelicula, sec: Pelicula) -> ColorCategoria:
 def _color_actores(adiv: Pelicula, sec: Pelicula) -> ColorCategoria:
     a = set(_norm(x) for x in adiv.lista_actores())
     b = set(_norm(x) for x in sec.lista_actores())
-    return ColorCategoria.VERDE if (a & b) else ColorCategoria.GRIS  # solo VERDE/GRIS
+
+    inter = a & b
+    if not inter:
+        return ColorCategoria.GRIS
+    if a == b:
+        return ColorCategoria.VERDE
+    return ColorCategoria.AMARILLO
 
 def _color_rating(adiv: Pelicula, sec: Pelicula) -> ColorCategoria:
     ra = float(adiv.imdb_rating) if adiv.imdb_rating is not None else None

@@ -22,17 +22,27 @@
     <!-- Navbar normal del sitio -->
     <a class="brand-btn" href="{% url 'moviegame:home' %}">movidle</a>
     <nav class="nav">
-      <a class="btn" href="{% url 'moviegame:stats' %}">Estadísticas</a>
-      <a class="btn" href="{% url 'moviegame:howto' %}">Cómo jugar</a>
-      {% if user.is_staff %}<a class="btn" href="{% url 'moviegame:admin_dashboard' %}">Panel</a>{% endif %}
-      {% if user.is_authenticated %}
-        <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
-          {% csrf_token %}<button type="submit" class="btn">Salir</button>
-        </form>
-      {% else %}
-        <a class="btn" href="{% url 'moviegame:login' %}">Entrar</a>
-        <a class="btn" href="{% url 'moviegame:register' %}">Registro</a>
-      {% endif %}
+        {% if user.is_staff %}
+            <!-- Solo admins -->
+            <a class="btn" href="{% url 'moviegame:admin_dashboard' %}">Panel</a>
+            <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
+                {% csrf_token %}<button type="submit" class="btn">Salir</button>
+            </form>
+        {% else %}
+            <!-- Jugadores -->
+            {% if user.is_authenticated %}
+                <a class="btn" href="{% url 'moviegame:stats' %}">Estadísticas</a>
+            {% endif %}
+            <a class="btn" href="{% url 'moviegame:howto' %}">Cómo jugar</a>
+            {% if user.is_authenticated %}
+                <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
+                    {% csrf_token %}<button type="submit" class="btn">Salir</button>
+                </form>
+            {% else %}
+                <a class="btn" href="{% url 'moviegame:login' %}">Entrar</a>
+                <a class="btn" href="{% url 'moviegame:register' %}">Registro</a>
+            {% endif %}
+        {% endif %}
     </nav>
   {% endif %}
 </header>

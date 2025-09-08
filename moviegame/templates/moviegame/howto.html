@@ -1,17 +1,58 @@
 {% extends "moviegame/base.html" %}
-{% block title %}Cómo jugar • Movidle{% endblock %}
 {% block content %}
-  <section class="card narrow">
-    <h2>Cómo jugar</h2>
-    <p>Adivina la película en 10 intentos. Cada intento revela atributos con colores:</p>
-    <ul class="list">
-      <li><b>Año:</b> Verde exacto, Amarillo ±5, Gris resto. ▲ si tu intento es mayor, ▼ si menor.</li>
-      <li><b>Popularidad (votos IMDb):</b> Verde exacto, Amarillo ±100 000, Gris resto. ▲/▼ según votos.</li>
-      <li><b>Géneros:</b> Verde si comparte alguno de los 3 principales.</li>
-      <li><b>Duración:</b> Verde exacta, Amarillo ±30 min, Gris resto. ▲/▼ según minutos.</li>
-      <li><b>Director:</b> Verde si coincide.</li>
-      <li><b>Actores:</b> Verde si coincide alguno de los 3 principales.</li>
-      <li><b>IMDb Rating:</b> Verde exacto, Amarillo ±1.0, Gris resto.</li>
+<div class="container">
+  <div class="card red form-card">
+    <h1 style="margin:0 0 10px">Cómo jugar</h1>
+
+    <p>Adivina la película en <strong>10 intentos</strong>. Cada intento revela pistas por categorías con
+      <strong>colores</strong> y, en los valores numéricos, <strong>flechas</strong> que te indican
+      hacia dónde moverte para alcanzar la correcta.</p>
+
+    <ul class="howto-list">
+      <li>
+        <strong>Año:</strong>
+        <span>Verde si es exacto.</span>
+        <span>Amarillo si la diferencia es ≤ 5.</span>
+        <span>Gris si es mayor.</span>
+        <span class="muted">Flecha ▲ si debes subir años, ▼ si debes bajar.</span>
+      </li>
+      <li>
+        <strong>Popularidad (votos IMDb):</strong>
+        <span>Verde si coincide.</span>
+        <span>Amarillo si la diferencia es ≤ 100&nbsp;000.</span>
+        <span>Gris si es mayor.</span>
+        <span class="muted">Flecha ▲ si debes subir votos, ▼ si debes bajar.</span>
+      </li>
+      <li>
+        <strong>Géneros:</strong>
+        <span>Verde si coinciden todos.</span>
+        <span>Amarillo si comparten alguno, pero no todos.</span>
+        <span>Gris si no comparten ninguno.</span>
+      </li>
+      <li>
+        <strong>Duración:</strong>
+        <span>Verde si es exacta.</span>
+        <span>Amarillo si la diferencia es ≤ 30&nbsp;min.</span>
+        <span>Gris si es mayor.</span>
+        <span class="muted">Flecha ▲ si debes subir minutos, ▼ si debes bajar.</span>
+      </li>
+      <li>
+        <strong>Director:</strong>
+        <span>Verde si coincide, Gris si no.</span>
+      </li>
+      <li>
+        <strong>Actores:</strong>
+        <span>Verde si coinciden todos.</span>
+        <span>Amarillo si comparten alguno, pero no todos.</span>
+        <span>Gris si no comparten ninguno.</span>
+      </li>
+      <li>
+        <strong>IMDb Rating:</strong>
+        <span>Verde si es exacto.</span>
+        <span>Amarillo si la diferencia es ≤ 1.0.</span>
+        <span>Gris si es mayor.</span>
+      </li>
     </ul>
-  </section>
+  </div>
+</div>
 {% endblock %}
