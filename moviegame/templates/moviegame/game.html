@@ -1,0 +1,124 @@
+{% extends "moviegame/base.html" %}
+{% block title %}Play • Movidle{% endblock %}
+{% block head %}
+<script>
+function getCookie(name){const v=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');return v?v.pop():"";}
+
+async function autocomplete(q){
+  if(!q || q.length<1) return [];
+  const r = await fetch(`/api/autocomplete/?q=${encodeURIComponent(q)}&limit=24`);
+  const j = await r.json(); return j.results || [];
+}
+
+function renderSuggest(list){
+  const c = document.getElementById("sugerencias"); c.innerHTML="";
+  list.forEach(it=>{
+    const d = document.createElement("div"); d.className="opt";
+    d.textContent = `${it.titulo} (${it.anio})`;
+    d.onclick = ()=>{ c.innerHTML=""; enviarIntento(it.id, it.titulo); };
+    c.appendChild(d);
+  });
+}
+
+function tile(label, color, arrow, valueText){
+  const a = arrow==="UP"?"▲":(arrow==="DOWN"?"▼":"");
+  return `
+    <div class="tile ${color}">
+      <div class="t-label">${label}</div>
+      <div class="t-sub">${valueText || ""} <span class="t-arrow">${a}</span></div>
+    </div>`;
+}
+
+function num(n){return (n==null)? "" : n.toLocaleString();}
+function minutes(n){return (n==null)? "" : `${n} min`;}
+function rating(n){return (n==null)? "" : Number(n).toFixed(1);}
+
+function addCard(titulo, j){
+  const card = document.createElement("div"); card.className="guess-card";
+  const tiles =
+    tile("Año", j.colorAño, j.arrowAño, j.valAño) +
+    tile("Popularidad (votos)", j.colorPopularidad, j.arrowPopularidad, num(j.valPopularidad)) +
+    tile("Géneros", j.colorGeneros, "", j.valGeneros) +
+    tile("Duración", j.colorDuración, j.arrowDuración, minutes(j.valDuración)) +
+    tile("Director", j.colorDirector, "", j.valDirector) +
+    tile("Actores", j.colorActores, "", j.valActores) +
+    tile("IMDb Rating", j.colorRating, "", rating(j.valRating));
+  card.innerHTML = `<div class="g-head">${titulo}</div><div class="tiles">${tiles}</div>`;
+  document.getElementById("guesses").prepend(card);
+}
+
+async function enviarIntento(id, tituloMostrado){
+  const input = document.getElementById("titulo");
+  const data = new URLSearchParams();
+  if(id) data.append("pelicula_id", id);
+  if(!id && input.value.trim()) data.append("titulo", input.value.trim());
+
+  const r = await fetch("{% url 'moviegame:api_intentos' %}", {
+    method:"POST", headers:{"X-CSRFToken":getCookie("csrftoken")}, body:data
+  });
+  const j = await r.json();
+  if(!r.ok){ alert(j.error || "Error"); return; }
+
+  if (j.numero_intento){
+    document.getElementById("guess-counter").innerText = `Guess ${j.numero_intento} de {{ max_intentos }}`;
+    const titulo = tituloMostrado || input.value.trim() || "Guess";
+    addCard(titulo, j);
+    input.value="";
+  }
+  if (j.estadoPartida && j.estadoPartida !== "EN_CURSO"){
+    openResult(j.revealTitle, j.revealAño, j.revealPoster);
+    input.disabled = true; document.getElementById("btn-buscar").disabled = true;
+  }
+  if (j.error){ console.log(j.error); }
+}
+
+function openResult(titulo, anio, poster){
+  const m = document.getElementById("modal-result");
+  document.getElementById("res-title").innerText = `${titulo} (${anio})`;
+  const img = document.getElementById("res-poster");
+  if (poster){ img.src = poster; img.style.display="block"; } else { img.style.display="none"; }
+  m.classList.remove("hidden");
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const input = document.getElementById("titulo");
+  input?.addEventListener("input", async (e)=> renderSuggest(await autocomplete(e.target.value.trim())));
+  document.getElementById("form-intento")?.addEventListener("submit", (e)=>{
+    e.preventDefault(); if (input.value.trim()) enviarIntento(null, null);
+  });
+  document.querySelector("#modal-result .close")?.addEventListener("click", ()=>{
+    document.getElementById("modal-result").classList.add("hidden");
+  });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+  {% if no_game_msg %}
+    <div class="card"><p class="muted">{{ no_game_msg }}</p></div>
+  {% else %}
+    <div class="play-top">
+      <div id="guess-counter">Guess {{ guess_now }} de {{ max_intentos }}</div>
+      <form id="form-intento" class="search">
+        {% csrf_token %}
+        <input id="titulo" placeholder="Type a guess here…" autocomplete="off" />
+        <button id="btn-buscar" class="icon-btn" title="Search">🔍</button>
+      </form>
+      <div id="sugerencias" class="suggest"></div>
+    </div>
+
+    <div id="guesses" class="guesses"></div>
+
+    <!-- Modal resultado (solo cuando termina) -->
+    <div id="modal-result" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3>Today's movie is…</h3>
+          <button class="close">×</button>
+        </div>
+        <img id="res-poster" style="max-height:220px;border-radius:12px;display:none"/>
+        <h3 id="res-title" style="margin-top:8px"></h3>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

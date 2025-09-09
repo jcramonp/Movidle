@@ -1,0 +1,42 @@
+{% extends "moviegame/base.html" %}
+{% block content %}
+<div class="container">
+  <div class="card red form-card">
+    <h1 style="margin:0 0 10px">Estadísticas de {{ request.user.username }}</h1>
+
+    <div class="stat-grid">
+      <div class="stat-item">
+        <span class="stat-label">Ganadas</span>
+        <span class="stat-value">{{ ganadas }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Perdidas</span>
+        <span class="stat-value">{{ perdidas }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Racha actual</span>
+        <span class="stat-value">{{ jugador.racha_actual }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Racha máxima</span>
+        <span class="stat-value">{{ jugador.racha_maxima }}</span>
+      </div>
+    </div>
+
+    <h2 style="margin:18px 0 8px">Distribución de intentos (victorias)</h2>
+    {% if distribucion %}
+      <ul class="dist-list">
+        {% for item in distribucion %}
+          <li class="dist-row">
+            <span class="dist-try">Intento {{ item.numero_intento }}</span>
+            <span class="dist-bar" style="--pct: {{ item.cnt }};"></span>
+            <span class="dist-count">{{ item.cnt }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Aún no hay victorias registradas.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
