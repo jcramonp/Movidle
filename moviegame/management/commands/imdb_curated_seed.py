@@ -1,4 +1,3 @@
-# moviegame/management/commands/imdb_curated_seed.py
 from django.core.management.base import BaseCommand
 import csv
 import gzip
@@ -46,15 +45,13 @@ DEFAULT_DECADE_VOTE_MIN = {
 }
 
 DEFAULT_DECADE_TARGETS = {
-    # Reparto orientativo (suma 1000). Se ajusta dinámicamente si faltan candidatos.
-    1950: 120,
-    1960: 120,
-    1970: 140,
-    1980: 160,
-    1990: 160,
+    # Reparto orientativo (suma 500). Se ajusta dinámicamente si faltan candidatos.
+    1970:  40,
+    1980:  50,
+    1990:  50,
     2000: 140,
     2010: 120,
-    2020:  40,
+    2020: 100,
 }
 
 PRIMARY_GENRE_CAP_FRACTION = 0.28  # máx. ~28% del cupo de una década por el mismo "primer" género
