@@ -186,3 +186,18 @@ body, body.bg{
 }
 .howto-list li strong{ display:block; font-weight:800; margin-bottom:4px; }
 .howto-list li span{ display:block; line-height:1.4; }
+
+/* Panel admin: hacer visible el texto del buscador */
+.card.red input[type="text"],
+.card.red input[type="search"],
+#titulo{
+  color: var(--ink);        /* texto negro */
+  background: #fff;         /* fondo blanco (ya lo tiene, lo reforzamos) */
+}
+
+/* Asegurar que el dropdown también salga en negro */
+#sugerencias,
+.suggest,
+.suggest .opt{
+  color: var(--ink);
+}
