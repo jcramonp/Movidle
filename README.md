@@ -13,9 +13,9 @@ Esta API se utiliza para manejar datos relacionados con el juego y llenar la bas
 2. **Crear y activar un entorno virtual**
 
 python -m venv venv
-# En Windows
+* En Windows
 venv\Scripts\activate
-# En Linux/Mac
+* En Linux/Mac
 source venv/bin/activate
 
 
@@ -42,5 +42,6 @@ python manage.py runserver
 Por defecto, estará disponible en:
 
 👉 http://127.0.0.1:8000/
+
 
 
