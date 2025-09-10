@@ -62,9 +62,9 @@ body, body.bg{
   background:var(--red); border:0; border-radius:999px; color:#fff; padding:0 12px; cursor:pointer;
 }
 .suggest{
-  background:#fff; border:1px solid #dfe3ea; border-radius:12px; margin-top:6px; max-height:260px; overflow:auto;
+  background:#fff; border:1px solid #dfe3ea; border-radius:12px; margin-top:6px; max-height:260px; overflow:auto; color: var(--ink);
 }
-.suggest .opt{padding:10px 12px; border-bottom:1px solid #eef1f4; cursor:pointer}
+.suggest .opt{padding:10px 12px; border-bottom:1px solid #eef1f4; cursor:pointer; color: var(--ink);}
 .suggest .opt:hover{border-color:var(--red); background:#fff5f3}
 
 /* ====== Guess cards ====== */

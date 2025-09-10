@@ -3,6 +3,7 @@ from django.db import transaction
 from moviegame.services.omdb import OMDbClient, mapear_a_pelicula_dict, OMDbError
 from moviegame.models import Pelicula
 
+
 class Command(BaseCommand):
     help = "Añade/actualiza una película desde OMDb (por título/año o imdbID)."
 

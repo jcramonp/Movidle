@@ -8,20 +8,42 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('moviegame', '0002_alter_pelicula_options_intento_feedback_jugador_and_more'),
+        ("moviegame", "0002_alter_pelicula_options_intento_feedback_jugador_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PeliculaDelDia',
+            name="PeliculaDelDia",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fecha', models.DateField(db_index=True, default=django.utils.timezone.localdate, unique=True)),
-                ('creado_en', models.DateTimeField(auto_now_add=True)),
-                ('pelicula', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='seleccionada_como_del_dia', to='moviegame.pelicula')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "fecha",
+                    models.DateField(
+                        db_index=True,
+                        default=django.utils.timezone.localdate,
+                        unique=True,
+                    ),
+                ),
+                ("creado_en", models.DateTimeField(auto_now_add=True)),
+                (
+                    "pelicula",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="seleccionada_como_del_dia",
+                        to="moviegame.pelicula",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-fecha'],
+                "ordering": ["-fecha"],
             },
         ),
     ]

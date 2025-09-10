@@ -30,7 +30,7 @@ Opciones:
 """
 
 RATINGS_URL = "https://datasets.imdbws.com/title.ratings.tsv.gz"
-BASICS_URL  = "https://datasets.imdbws.com/title.basics.tsv.gz"
+BASICS_URL = "https://datasets.imdbws.com/title.basics.tsv.gz"
 
 
 def _download(url: str) -> bytes:
@@ -51,8 +51,12 @@ class Command(BaseCommand):
     help = "Construye seed_movies.csv con las películas más votadas en IMDb (non-commercial datasets)."
 
     def add_arguments(self, parser):
-        parser.add_argument("--top", type=int, default=1000, help="Cantidad de títulos (default 1000)")
-        parser.add_argument("--out", type=str, default="seed_movies.csv", help="Ruta de salida CSV")
+        parser.add_argument(
+            "--top", type=int, default=1000, help="Cantidad de títulos (default 1000)"
+        )
+        parser.add_argument(
+            "--out", type=str, default="seed_movies.csv", help="Ruta de salida CSV"
+        )
         parser.add_argument(
             "--oversample",
             type=int,
@@ -69,7 +73,9 @@ class Command(BaseCommand):
         ratings_buf = _download(RATINGS_URL)
 
         # 1) Tomar los más votados (tconst, numVotes)
-        self.stdout.write(self.style.NOTICE("Procesando ratings (ordenando por numVotes desc)..."))
+        self.stdout.write(
+            self.style.NOTICE("Procesando ratings (ordenando por numVotes desc)...")
+        )
         votes = []
         for r in _read_tsv_gz(ratings_buf):
             tconst = r.get("tconst")
@@ -91,7 +97,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE("Descargando basics..."))
         basics_buf = _download(BASICS_URL)
 
-        self.stdout.write(self.style.NOTICE("Filtrando 'movie' no adult y armando TOP..."))
+        self.stdout.write(
+            self.style.NOTICE("Filtrando 'movie' no adult y armando TOP...")
+        )
         results = []
         for b in _read_tsv_gz(basics_buf):
             tconst = b.get("tconst")
@@ -118,11 +126,17 @@ class Command(BaseCommand):
                 break
 
         if not results:
-            self.stderr.write(self.style.ERROR("No se obtuvieron resultados. ¿Problemas de red o formato?"))
+            self.stderr.write(
+                self.style.ERROR(
+                    "No se obtuvieron resultados. ¿Problemas de red o formato?"
+                )
+            )
             sys.exit(1)
 
         # 3) Escribir CSV: title,year
-        self.stdout.write(self.style.NOTICE(f"Escribiendo CSV ({len(results)} filas) → {out_path}"))
+        self.stdout.write(
+            self.style.NOTICE(f"Escribiendo CSV ({len(results)} filas) → {out_path}")
+        )
         with out_path.open("w", newline="", encoding="utf-8") as fh:
             w = csv.writer(fh)
             w.writerow(["title", "year"])
@@ -130,4 +144,6 @@ class Command(BaseCommand):
                 w.writerow([title, year])
 
         self.stdout.write(self.style.SUCCESS(f"Listo: {out_path.resolve()}"))
-        self.stdout.write(self.style.SUCCESS("Ahora puedes cargar a tu BD con omdb_bulk_titles."))
+        self.stdout.write(
+            self.style.SUCCESS("Ahora puedes cargar a tu BD con omdb_bulk_titles.")
+        )

@@ -9,71 +9,198 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('moviegame', '0001_initial'),
+        ("moviegame", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='pelicula',
-            options={'ordering': ['titulo']},
+            name="pelicula",
+            options={"ordering": ["titulo"]},
         ),
         migrations.CreateModel(
-            name='Intento',
+            name="Intento",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('numero_intento', models.PositiveIntegerField()),
-                ('creado_en', models.DateTimeField(auto_now_add=True)),
-                ('pelicula_adivinada', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='como_adivinada_en', to='moviegame.pelicula')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("numero_intento", models.PositiveIntegerField()),
+                ("creado_en", models.DateTimeField(auto_now_add=True)),
+                (
+                    "pelicula_adivinada",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="como_adivinada_en",
+                        to="moviegame.pelicula",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['numero_intento'],
+                "ordering": ["numero_intento"],
             },
         ),
         migrations.CreateModel(
-            name='Feedback',
+            name="Feedback",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('color_anio', models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], max_length=10)),
-                ('color_genero', models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], max_length=10)),
-                ('color_direccion', models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], max_length=10)),
-                ('color_actores', models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], max_length=10)),
-                ('es_correcto', models.BooleanField(default=False)),
-                ('intento', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='feedback', to='moviegame.intento')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "color_anio",
+                    models.CharField(
+                        choices=[
+                            ("VERDE", "Verde"),
+                            ("AMARILLO", "Amarillo"),
+                            ("GRIS", "Gris"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "color_genero",
+                    models.CharField(
+                        choices=[
+                            ("VERDE", "Verde"),
+                            ("AMARILLO", "Amarillo"),
+                            ("GRIS", "Gris"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "color_direccion",
+                    models.CharField(
+                        choices=[
+                            ("VERDE", "Verde"),
+                            ("AMARILLO", "Amarillo"),
+                            ("GRIS", "Gris"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "color_actores",
+                    models.CharField(
+                        choices=[
+                            ("VERDE", "Verde"),
+                            ("AMARILLO", "Amarillo"),
+                            ("GRIS", "Gris"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                ("es_correcto", models.BooleanField(default=False)),
+                (
+                    "intento",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="feedback",
+                        to="moviegame.intento",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Jugador',
+            name="Jugador",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('racha_actual', models.PositiveIntegerField(default=0)),
-                ('racha_maxima', models.PositiveIntegerField(default=0)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='jugador', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("racha_actual", models.PositiveIntegerField(default=0)),
+                ("racha_maxima", models.PositiveIntegerField(default=0)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="jugador",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Partida',
+            name="Partida",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fecha', models.DateField(db_index=True, default=django.utils.timezone.localdate)),
-                ('estado', models.CharField(choices=[('EN_CURSO', 'En curso'), ('GANADA', 'Ganada'), ('PERDIDA', 'Perdida')], default='EN_CURSO', max_length=12)),
-                ('intentos_maximos', models.PositiveIntegerField(default=6)),
-                ('creado_en', models.DateTimeField(auto_now_add=True)),
-                ('jugador', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='partidas', to='moviegame.jugador')),
-                ('pelicula_secreta', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='como_secreta_en', to='moviegame.pelicula')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "fecha",
+                    models.DateField(
+                        db_index=True, default=django.utils.timezone.localdate
+                    ),
+                ),
+                (
+                    "estado",
+                    models.CharField(
+                        choices=[
+                            ("EN_CURSO", "En curso"),
+                            ("GANADA", "Ganada"),
+                            ("PERDIDA", "Perdida"),
+                        ],
+                        default="EN_CURSO",
+                        max_length=12,
+                    ),
+                ),
+                ("intentos_maximos", models.PositiveIntegerField(default=6)),
+                ("creado_en", models.DateTimeField(auto_now_add=True)),
+                (
+                    "jugador",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="partidas",
+                        to="moviegame.jugador",
+                    ),
+                ),
+                (
+                    "pelicula_secreta",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="como_secreta_en",
+                        to="moviegame.pelicula",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-fecha', '-creado_en'],
-                'unique_together': {('jugador', 'fecha')},
+                "ordering": ["-fecha", "-creado_en"],
+                "unique_together": {("jugador", "fecha")},
             },
         ),
         migrations.AddField(
-            model_name='intento',
-            name='partida',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='intentos', to='moviegame.partida'),
+            model_name="intento",
+            name="partida",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="intentos",
+                to="moviegame.partida",
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='intento',
-            unique_together={('partida', 'numero_intento')},
+            name="intento",
+            unique_together={("partida", "numero_intento")},
         ),
     ]

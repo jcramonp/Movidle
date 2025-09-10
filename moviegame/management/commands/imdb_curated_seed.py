@@ -28,11 +28,11 @@ Luego cargas con:
 """
 
 RATINGS_URL = "https://datasets.imdbws.com/title.ratings.tsv.gz"
-BASICS_URL  = "https://datasets.imdbws.com/title.basics.tsv.gz"
+BASICS_URL = "https://datasets.imdbws.com/title.basics.tsv.gz"
 
 DEFAULT_DECADE_VOTE_MIN = {
     # Umbral mínimo (aprox.) de votos por década: más bajo en décadas antiguas
-    1930:  8000,
+    1930: 8000,
     1940: 12000,
     1950: 20000,
     1960: 30000,
@@ -46,15 +46,17 @@ DEFAULT_DECADE_VOTE_MIN = {
 
 DEFAULT_DECADE_TARGETS = {
     # Reparto orientativo (suma 500). Se ajusta dinámicamente si faltan candidatos.
-    1970:  40,
-    1980:  50,
-    1990:  50,
+    1970: 40,
+    1980: 50,
+    1990: 50,
     2000: 140,
     2010: 120,
     2020: 100,
 }
 
-PRIMARY_GENRE_CAP_FRACTION = 0.28  # máx. ~28% del cupo de una década por el mismo "primer" género
+PRIMARY_GENRE_CAP_FRACTION = (
+    0.28  # máx. ~28% del cupo de una década por el mismo "primer" género
+)
 DEFAULT_MIN_RATING = 7.0
 
 
@@ -79,14 +81,34 @@ class Command(BaseCommand):
     help = "Genera un CSV curado (title,year) equilibrado por décadas y géneros a partir de datasets IMDb."
 
     def add_arguments(self, parser):
-        parser.add_argument("--top", type=int, default=1000, help="Cantidad destino (default 1000)")
-        parser.add_argument("--out", type=str, default="seed_movies.csv", help="Ruta salida CSV")
-        parser.add_argument("--year-min", type=int, default=1950, help="Año mínimo (default 1950)")
-        parser.add_argument("--year-max", type=int, default=2025, help="Año máximo (default 2025)")
-        parser.add_argument("--rating-min", type=float, default=DEFAULT_MIN_RATING, help="Rating mínimo IMDb")
-        parser.add_argument("--strict", action="store_true",
-                            help="Si una década no llena su cupo, NO redistribuye (deja menos de 'top').")
-        parser.add_argument("--print-stats", action="store_true", help="Muestra resumen por década/género.")
+        parser.add_argument(
+            "--top", type=int, default=1000, help="Cantidad destino (default 1000)"
+        )
+        parser.add_argument(
+            "--out", type=str, default="seed_movies.csv", help="Ruta salida CSV"
+        )
+        parser.add_argument(
+            "--year-min", type=int, default=1950, help="Año mínimo (default 1950)"
+        )
+        parser.add_argument(
+            "--year-max", type=int, default=2025, help="Año máximo (default 2025)"
+        )
+        parser.add_argument(
+            "--rating-min",
+            type=float,
+            default=DEFAULT_MIN_RATING,
+            help="Rating mínimo IMDb",
+        )
+        parser.add_argument(
+            "--strict",
+            action="store_true",
+            help="Si una década no llena su cupo, NO redistribuye (deja menos de 'top').",
+        )
+        parser.add_argument(
+            "--print-stats",
+            action="store_true",
+            help="Muestra resumen por década/género.",
+        )
 
     def handle(self, *args, **opts):
         top_n = int(opts["top"])
@@ -168,20 +190,26 @@ class Command(BaseCommand):
                 except ValueError:
                     runtime = None
 
-            buckets[dec].append({
-                "tconst": tconst,
-                "title": title,
-                "year": year,
-                "rating": rating,
-                "votes": votes,
-                "genres": genres,
-                "pgenre": primary_genre,
-                "runtime": runtime,
-            })
+            buckets[dec].append(
+                {
+                    "tconst": tconst,
+                    "title": title,
+                    "year": year,
+                    "rating": rating,
+                    "votes": votes,
+                    "genres": genres,
+                    "pgenre": primary_genre,
+                    "runtime": runtime,
+                }
+            )
             kept += 1
 
         if kept == 0:
-            self.stderr.write(self.style.ERROR("No hay candidatos tras filtros. Ajusta rating/votes/year."))
+            self.stderr.write(
+                self.style.ERROR(
+                    "No hay candidatos tras filtros. Ajusta rating/votes/year."
+                )
+            )
             sys.exit(1)
 
         # Orden dentro de cada década: por votos desc, luego rating desc, luego título
@@ -242,7 +270,9 @@ class Command(BaseCommand):
                 pg = item["pgenre"]
                 if per_genre[pg] >= cap:
                     continue
-                results.append((item["title"], item["year"], d, pg, item["votes"], item["rating"]))
+                results.append(
+                    (item["title"], item["year"], d, pg, item["votes"], item["rating"])
+                )
                 per_genre[pg] += 1
                 taken += 1
 
@@ -251,9 +281,25 @@ class Command(BaseCommand):
                 for item in buckets[d]:
                     if taken >= targets[d]:
                         break
-                    if (item["title"], item["year"], d, item["pgenre"], item["votes"], item["rating"]) in results:
+                    if (
+                        item["title"],
+                        item["year"],
+                        d,
+                        item["pgenre"],
+                        item["votes"],
+                        item["rating"],
+                    ) in results:
                         continue
-                    results.append((item["title"], item["year"], d, item["pgenre"], item["votes"], item["rating"]))
+                    results.append(
+                        (
+                            item["title"],
+                            item["year"],
+                            d,
+                            item["pgenre"],
+                            item["votes"],
+                            item["rating"],
+                        )
+                    )
                     taken += 1
 
         # Si aún sobra (estrict=False), rellena de cualquier década con stock
@@ -268,7 +314,16 @@ class Command(BaseCommand):
                 key = (item["title"], item["year"])
                 if key in chosen:
                     continue
-                results.append((item["title"], item["year"], _decade(item["year"]), item["pgenre"], item["votes"], item["rating"]))
+                results.append(
+                    (
+                        item["title"],
+                        item["year"],
+                        _decade(item["year"]),
+                        item["pgenre"],
+                        item["votes"],
+                        item["rating"],
+                    )
+                )
                 if len(results) >= top_n:
                     break
 
@@ -283,7 +338,7 @@ class Command(BaseCommand):
         # Stats opcionales
         if show_stats:
             by_dec = Counter(r[2] for r in results)
-            by_g  = Counter(r[3] for r in results)
+            by_g = Counter(r[3] for r in results)
             self.stdout.write("---- RESUMEN ----")
             self.stdout.write("Por década:")
             for d in sorted(by_dec.keys()):
@@ -292,5 +347,13 @@ class Command(BaseCommand):
             for g, c in by_g.most_common():
                 self.stdout.write(f"  {g}: {c}")
 
-        self.stdout.write(self.style.SUCCESS(f"OK: escrito {out_path.resolve()} con {len(results)} títulos."))
-        self.stdout.write(self.style.NOTICE("Ahora ejecuta: python manage.py omdb_bulk_titles --file seed_movies.csv --sleep 1.2 --only-missing"))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"OK: escrito {out_path.resolve()} con {len(results)} títulos."
+            )
+        )
+        self.stdout.write(
+            self.style.NOTICE(
+                "Ahora ejecuta: python manage.py omdb_bulk_titles --file seed_movies.csv --sleep 1.2 --only-missing"
+            )
+        )

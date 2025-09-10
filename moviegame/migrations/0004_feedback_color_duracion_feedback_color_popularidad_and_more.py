@@ -6,92 +6,173 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('moviegame', '0003_peliculadeldia'),
+        ("moviegame", "0003_peliculadeldia"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='feedback',
-            name='color_duracion',
-            field=models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], default='GRIS', max_length=10),
+            model_name="feedback",
+            name="color_duracion",
+            field=models.CharField(
+                choices=[
+                    ("VERDE", "Verde"),
+                    ("AMARILLO", "Amarillo"),
+                    ("GRIS", "Gris"),
+                ],
+                default="GRIS",
+                max_length=10,
+            ),
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='color_popularidad',
-            field=models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], default='GRIS', max_length=10),
+            model_name="feedback",
+            name="color_popularidad",
+            field=models.CharField(
+                choices=[
+                    ("VERDE", "Verde"),
+                    ("AMARILLO", "Amarillo"),
+                    ("GRIS", "Gris"),
+                ],
+                default="GRIS",
+                max_length=10,
+            ),
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='color_rating',
-            field=models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], default='GRIS', max_length=10),
+            model_name="feedback",
+            name="color_rating",
+            field=models.CharField(
+                choices=[
+                    ("VERDE", "Verde"),
+                    ("AMARILLO", "Amarillo"),
+                    ("GRIS", "Gris"),
+                ],
+                default="GRIS",
+                max_length=10,
+            ),
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='flecha_anio',
-            field=models.CharField(blank=True, choices=[('UP', 'Arriba'), ('DOWN', 'Abajo'), ('', 'Igual')], default='', max_length=4),
+            model_name="feedback",
+            name="flecha_anio",
+            field=models.CharField(
+                blank=True,
+                choices=[("UP", "Arriba"), ("DOWN", "Abajo"), ("", "Igual")],
+                default="",
+                max_length=4,
+            ),
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='flecha_duracion',
-            field=models.CharField(blank=True, choices=[('UP', 'Arriba'), ('DOWN', 'Abajo'), ('', 'Igual')], default='', max_length=4),
+            model_name="feedback",
+            name="flecha_duracion",
+            field=models.CharField(
+                blank=True,
+                choices=[("UP", "Arriba"), ("DOWN", "Abajo"), ("", "Igual")],
+                default="",
+                max_length=4,
+            ),
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='flecha_popularidad',
-            field=models.CharField(blank=True, choices=[('UP', 'Arriba'), ('DOWN', 'Abajo'), ('', 'Igual')], default='', max_length=4),
+            model_name="feedback",
+            name="flecha_popularidad",
+            field=models.CharField(
+                blank=True,
+                choices=[("UP", "Arriba"), ("DOWN", "Abajo"), ("", "Igual")],
+                default="",
+                max_length=4,
+            ),
         ),
         migrations.AddField(
-            model_name='pelicula',
-            name='duracion_min',
-            field=models.PositiveIntegerField(default=0, verbose_name='duración (min)'),
+            model_name="pelicula",
+            name="duracion_min",
+            field=models.PositiveIntegerField(default=0, verbose_name="duración (min)"),
         ),
         migrations.AddField(
-            model_name='pelicula',
-            name='imdb_rating',
-            field=models.DecimalField(blank=True, decimal_places=1, max_digits=3, null=True, verbose_name='IMDb rating'),
+            model_name="pelicula",
+            name="imdb_rating",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=1,
+                max_digits=3,
+                null=True,
+                verbose_name="IMDb rating",
+            ),
         ),
         migrations.AddField(
-            model_name='pelicula',
-            name='imdb_votes',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='IMDb votes'),
+            model_name="pelicula",
+            name="imdb_votes",
+            field=models.PositiveIntegerField(
+                blank=True, null=True, verbose_name="IMDb votes"
+            ),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='color_actores',
-            field=models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], default='GRIS', max_length=10),
+            model_name="feedback",
+            name="color_actores",
+            field=models.CharField(
+                choices=[
+                    ("VERDE", "Verde"),
+                    ("AMARILLO", "Amarillo"),
+                    ("GRIS", "Gris"),
+                ],
+                default="GRIS",
+                max_length=10,
+            ),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='color_anio',
-            field=models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], default='GRIS', max_length=10),
+            model_name="feedback",
+            name="color_anio",
+            field=models.CharField(
+                choices=[
+                    ("VERDE", "Verde"),
+                    ("AMARILLO", "Amarillo"),
+                    ("GRIS", "Gris"),
+                ],
+                default="GRIS",
+                max_length=10,
+            ),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='color_direccion',
-            field=models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], default='GRIS', max_length=10),
+            model_name="feedback",
+            name="color_direccion",
+            field=models.CharField(
+                choices=[
+                    ("VERDE", "Verde"),
+                    ("AMARILLO", "Amarillo"),
+                    ("GRIS", "Gris"),
+                ],
+                default="GRIS",
+                max_length=10,
+            ),
         ),
         migrations.AlterField(
-            model_name='feedback',
-            name='color_genero',
-            field=models.CharField(choices=[('VERDE', 'Verde'), ('AMARILLO', 'Amarillo'), ('GRIS', 'Gris')], default='GRIS', max_length=10),
+            model_name="feedback",
+            name="color_genero",
+            field=models.CharField(
+                choices=[
+                    ("VERDE", "Verde"),
+                    ("AMARILLO", "Amarillo"),
+                    ("GRIS", "Gris"),
+                ],
+                default="GRIS",
+                max_length=10,
+            ),
         ),
         migrations.AlterField(
-            model_name='partida',
-            name='intentos_maximos',
+            model_name="partida",
+            name="intentos_maximos",
             field=models.PositiveIntegerField(default=10),
         ),
         migrations.AlterField(
-            model_name='pelicula',
-            name='anio',
-            field=models.PositiveIntegerField(db_index=True, verbose_name='año'),
+            model_name="pelicula",
+            name="anio",
+            field=models.PositiveIntegerField(db_index=True, verbose_name="año"),
         ),
         migrations.AlterField(
-            model_name='pelicula',
-            name='titulo',
+            model_name="pelicula",
+            name="titulo",
             field=models.CharField(db_index=True, max_length=255),
         ),
         migrations.AddConstraint(
-            model_name='pelicula',
-            constraint=models.UniqueConstraint(fields=('titulo', 'anio'), name='uniq_titulo_anio'),
+            model_name="pelicula",
+            constraint=models.UniqueConstraint(
+                fields=("titulo", "anio"), name="uniq_titulo_anio"
+            ),
         ),
     ]

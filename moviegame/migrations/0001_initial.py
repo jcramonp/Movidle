@@ -7,25 +7,38 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Pelicula',
+            name="Pelicula",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('titulo', models.CharField(db_index=True, max_length=255, unique=True)),
-                ('anio', models.PositiveIntegerField(db_index=True)),
-                ('genero', models.CharField(blank=True, max_length=255)),
-                ('director', models.CharField(blank=True, max_length=255)),
-                ('actores', models.CharField(blank=True, max_length=512)),
-                ('imdb_id', models.CharField(blank=True, max_length=16, null=True, unique=True)),
-                ('poster_url', models.URLField(blank=True)),
-                ('creado_en', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "titulo",
+                    models.CharField(db_index=True, max_length=255, unique=True),
+                ),
+                ("anio", models.PositiveIntegerField(db_index=True)),
+                ("genero", models.CharField(blank=True, max_length=255)),
+                ("director", models.CharField(blank=True, max_length=255)),
+                ("actores", models.CharField(blank=True, max_length=512)),
+                (
+                    "imdb_id",
+                    models.CharField(blank=True, max_length=16, null=True, unique=True),
+                ),
+                ("poster_url", models.URLField(blank=True)),
+                ("creado_en", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'ordering': ['-creado_en'],
+                "ordering": ["-creado_en"],
             },
         ),
     ]

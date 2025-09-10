@@ -8,13 +8,26 @@ from django.views.decorators.http import require_POST
 from django.db.models import Count
 from django.utils import timezone
 
-from .models import Pelicula, Partida, Jugador, Feedback, Intento, EstadoPartida, PeliculaDelDia
-from .services.game_service import registrar_intento, seleccionar_pelicula_diaria, MAX_INTENTOS
+from .models import (
+    Pelicula,
+    Partida,
+    Jugador,
+    Feedback,
+    Intento,
+    EstadoPartida,
+    PeliculaDelDia,
+)
+from .services.game_service import (
+    registrar_intento,
+    seleccionar_pelicula_diaria,
+    MAX_INTENTOS,
+)
 
 
 # --------------------------
 #  PÁGINAS
 # --------------------------
+
 
 def home_view(request):
     """Landing: logo, tagline y botón Play."""
@@ -40,17 +53,29 @@ def game_view(request):
     Si el admin no ha seleccionado película, mostramos mensaje.
     """
     jugador = request.user.jugador
+    if request.user.is_staff:
+        return redirect("moviegame:admin_dashboard")
+
+    jugador = getattr(request.user, "jugador", None)
+
+    if jugador is None:
+        jugador = Jugador.objects.create(user=request.user)
+
     fecha = timezone.localdate()
 
     try:
         secreta = seleccionar_pelicula_diaria(fecha)
     except RuntimeError as e:
         # No hay selección: mostramos aviso en la plantilla
-        return render(request, "moviegame/game.html", {
-            "no_game_msg": str(e),
-            "guess_now": 1,
-            "max_intentos": MAX_INTENTOS,
-        })
+        return render(
+            request,
+            "moviegame/game.html",
+            {
+                "no_game_msg": str(e),
+                "guess_now": 1,
+                "max_intentos": MAX_INTENTOS,
+            },
+        )
 
     partida, _ = Partida.objects.get_or_create(
         jugador=jugador,
@@ -59,10 +84,14 @@ def game_view(request):
     )
 
     guess_now = partida.intentos.count() + 1
-    return render(request, "moviegame/game.html", {
-        "guess_now": guess_now,
-        "max_intentos": MAX_INTENTOS,
-    })
+    return render(
+        request,
+        "moviegame/game.html",
+        {
+            "guess_now": guess_now,
+            "max_intentos": MAX_INTENTOS,
+        },
+    )
 
 
 @login_required
@@ -72,23 +101,32 @@ def stats_view(request):
     partidas = jugador.partidas.all()
     ganadas = partidas.filter(estado=EstadoPartida.GANADA).count()
     perdidas = partidas.filter(estado=EstadoPartida.PERDIDA).count()
-    distribucion = (Intento.objects
-                    .filter(partida__jugador=jugador, feedback__es_correcto=True)
-                    .values("numero_intento")
-                    .annotate(cnt=Count("id"))
-                    .order_by("numero_intento"))
-    return render(request, "moviegame/stats.html", {
-        "jugador": jugador,
-        "ganadas": ganadas, "perdidas": perdidas,
-        "distribucion": list(distribucion),
-    })
+    distribucion = (
+        Intento.objects.filter(partida__jugador=jugador, feedback__es_correcto=True)
+        .values("numero_intento")
+        .annotate(cnt=Count("id"))
+        .order_by("numero_intento")
+    )
+    return render(
+        request,
+        "moviegame/stats.html",
+        {
+            "jugador": jugador,
+            "ganadas": ganadas,
+            "perdidas": perdidas,
+            "distribucion": list(distribucion),
+        },
+    )
 
 
 # --------------------------
 #  PANEL ADMIN (simple)
 # --------------------------
 
-def _es_staff(u): return u.is_staff
+
+def _es_staff(u):
+    return u.is_staff
+
 
 @user_passes_test(_es_staff)
 def admin_dashboard(request):
@@ -103,17 +141,26 @@ def admin_dashboard(request):
     total_partidas = Partida.objects.filter(fecha=hoy).count()
     win = Partida.objects.filter(fecha=hoy, estado=EstadoPartida.GANADA).count()
     tasa_acierto = round(win * 100 / total_partidas, 1) if total_partidas else 0
-    top_pelis = (Intento.objects.filter(partida__fecha=hoy)
-                 .values("pelicula_adivinada__titulo")
-                 .annotate(cnt=Count("id"))
-                 .order_by("-cnt")[:10])
+    top_pelis = (
+        Intento.objects.filter(partida__fecha=hoy)
+        .values("pelicula_adivinada__titulo")
+        .annotate(cnt=Count("id"))
+        .order_by("-cnt")[:10]
+    )
 
-    return render(request, "moviegame/admin_dashboard.html", {
-        "hoy": hoy, "total_intentos": total_intentos,
-        "total_partidas": total_partidas, "tasa_acierto": tasa_acierto,
-        "top_pelis": top_pelis, "secreta": secreta,
-        "navbar_mode": "admin",
-    })
+    return render(
+        request,
+        "moviegame/admin_dashboard.html",
+        {
+            "hoy": hoy,
+            "total_intentos": total_intentos,
+            "total_partidas": total_partidas,
+            "tasa_acierto": tasa_acierto,
+            "top_pelis": top_pelis,
+            "secreta": secreta,
+            "navbar_mode": "admin",
+        },
+    )
 
 
 @user_passes_test(_es_staff)
@@ -137,6 +184,7 @@ def admin_set_daily(request):
 #  API
 # --------------------------
 
+
 @login_required
 @require_POST
 def api_intentos(request):
@@ -157,17 +205,24 @@ def api_intentos(request):
     fecha = timezone.localdate()
 
     # Si ya terminó, devolvemos revelación inmediata
-    partida_existente = (Partida.objects
-                         .filter(jugador=jugador, fecha=fecha)
-                         .select_related("pelicula_secreta").first())
+    partida_existente = (
+        Partida.objects.filter(jugador=jugador, fecha=fecha)
+        .select_related("pelicula_secreta")
+        .first()
+    )
     if partida_existente and partida_existente.estado != EstadoPartida.EN_CURSO:
         s = partida_existente.pelicula_secreta
-        return JsonResponse({
-            "error": "La partida del día ya finalizó.",
-            "estadoPartida": partida_existente.estado,
-            "revealTitle": s.titulo, "revealAño": s.anio, "revealPoster": s.poster_url,
-            "intentosRestantes": 0,
-        }, status=200)
+        return JsonResponse(
+            {
+                "error": "La partida del día ya finalizó.",
+                "estadoPartida": partida_existente.estado,
+                "revealTitle": s.titulo,
+                "revealAño": s.anio,
+                "revealPoster": s.poster_url,
+                "intentosRestantes": 0,
+            },
+            status=200,
+        )
 
     # Resolver película del intento
     pid = request.POST.get("pelicula_id")
@@ -186,15 +241,23 @@ def api_intentos(request):
     try:
         res = registrar_intento(jugador, peli)
     except ValueError as e:
-        partida = Partida.objects.filter(jugador=jugador, fecha=fecha).select_related("pelicula_secreta").first()
+        partida = (
+            Partida.objects.filter(jugador=jugador, fecha=fecha)
+            .select_related("pelicula_secreta")
+            .first()
+        )
         payload = {"error": str(e)}
         if partida and partida.estado != EstadoPartida.EN_CURSO:
             s = partida.pelicula_secreta
-            payload.update({
-                "estadoPartida": partida.estado,
-                "revealTitle": s.titulo, "revealAño": s.anio, "revealPoster": s.poster_url,
-                "intentosRestantes": 0,
-            })
+            payload.update(
+                {
+                    "estadoPartida": partida.estado,
+                    "revealTitle": s.titulo,
+                    "revealAño": s.anio,
+                    "revealPoster": s.poster_url,
+                    "intentosRestantes": 0,
+                }
+            )
         return JsonResponse(payload, status=200)
 
     reveal = {}
@@ -202,40 +265,40 @@ def api_intentos(request):
         # Traemos la secreta para revelar
         partida = Partida.objects.get(jugador=jugador, fecha=fecha)
         s = partida.pelicula_secreta
-        reveal = {"revealTitle": s.titulo, "revealAño": s.anio, "revealPoster": s.poster_url}
+        reveal = {
+            "revealTitle": s.titulo,
+            "revealAño": s.anio,
+            "revealPoster": s.poster_url,
+        }
 
-    return JsonResponse({
-        "numero_intento": res.numero_intento,
-        "intentosRestantes": res.intentos_restantes,
-        "estadoPartida": res.estado_partida,
-
-        "colorAño": res.color_anio,
-        "arrowAño": res.arrow_anio,
-
-        "colorPopularidad": res.color_popularidad,
-        "arrowPopularidad": res.arrow_popularidad,
-
-        "colorGeneros": res.color_genero,
-
-        "colorDuración": res.color_duracion,
-        "arrowDuración": res.arrow_duracion,
-
-        "colorDirector": res.color_direccion,
-        "colorActores": res.color_actores,
-
-        "colorRating": res.color_rating,
-
-        # ⬇⬇⬇  VALORES DEL INTENTO (PISTAS)  ⬇⬇⬇
-        "valAño": int(peli.anio) if peli.anio is not None else None,
-        "valPopularidad": int(peli.imdb_votes or 0),
-        "valGeneros": ", ".join(peli.lista_generos()),
-        "valDuración": int(peli.duracion_min or 0),
-        "valDirector": peli.director,
-        "valActores": ", ".join(peli.lista_actores()),
-        "valRating": float(peli.imdb_rating) if peli.imdb_rating is not None else None,
-
-        **reveal,
-    })
+    return JsonResponse(
+        {
+            "numero_intento": res.numero_intento,
+            "intentosRestantes": res.intentos_restantes,
+            "estadoPartida": res.estado_partida,
+            "colorAño": res.color_anio,
+            "arrowAño": res.arrow_anio,
+            "colorPopularidad": res.color_popularidad,
+            "arrowPopularidad": res.arrow_popularidad,
+            "colorGeneros": res.color_genero,
+            "colorDuración": res.color_duracion,
+            "arrowDuración": res.arrow_duracion,
+            "colorDirector": res.color_direccion,
+            "colorActores": res.color_actores,
+            "colorRating": res.color_rating,
+            # ⬇⬇⬇  VALORES DEL INTENTO (PISTAS)  ⬇⬇⬇
+            "valAño": int(peli.anio) if peli.anio is not None else None,
+            "valPopularidad": int(peli.imdb_votes or 0),
+            "valGeneros": ", ".join(peli.lista_generos()),
+            "valDuración": int(peli.duracion_min or 0),
+            "valDirector": peli.director,
+            "valActores": ", ".join(peli.lista_actores()),
+            "valRating": (
+                float(peli.imdb_rating) if peli.imdb_rating is not None else None
+            ),
+            **reveal,
+        }
+    )
 
 
 @login_required
@@ -256,23 +319,27 @@ def api_autocomplete(request):
     if not q:
         return JsonResponse({"results": []})
 
-    base = (Pelicula.objects
-            .filter(imdb_votes__isnull=False, imdb_rating__isnull=False)
-            .order_by("-imdb_votes"))
+    base = Pelicula.objects.filter(
+        imdb_votes__isnull=False, imdb_rating__isnull=False
+    ).order_by("-imdb_votes")
 
     # Empiezan por q
-    starts = list(base.filter(titulo__istartswith=q).values("id", "titulo", "anio")[:limit])
+    starts = list(
+        base.filter(titulo__istartswith=q).values("id", "titulo", "anio")[:limit]
+    )
 
     results = starts[:]
     if len(results) < limit:
         left = limit - len(results)
-        contains = (base.filter(titulo__icontains=q)
-                    .exclude(id__in=[r["id"] for r in results])
-                    .values("id", "titulo", "anio")[:left])
+        contains = (
+            base.filter(titulo__icontains=q)
+            .exclude(id__in=[r["id"] for r in results])
+            .values("id", "titulo", "anio")[:left]
+        )
         results.extend(list(contains))
 
     return JsonResponse({"results": results})
 
+
 def howto_view(request):
     return render(request, "moviegame/howto.html")
-

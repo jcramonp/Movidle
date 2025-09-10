@@ -16,11 +16,12 @@ Inception;2010
 tt6751668
 """
 
+
 def parse_line(line: str) -> tuple[str, int] | tuple[str, None]:
     line = line.strip()
     if not line or line.startswith("#"):
         return ("", None)
-    if line.startswith("tt"):        # imdbID directo
+    if line.startswith("tt"):  # imdbID directo
         return (line, None)
     if ";" in line:
         t, y = line.split(";", 1)
@@ -28,13 +29,18 @@ def parse_line(line: str) -> tuple[str, int] | tuple[str, None]:
         return (t.strip(), int(y) if y.isdigit() else None)
     return (line, None)
 
+
 class Command(BaseCommand):
     help = "Importa múltiples películas desde un archivo (una por línea)."
 
     def add_arguments(self, parser):
         parser.add_argument("--file", required=True, help="Ruta del archivo de títulos")
-        parser.add_argument("--sleep", type=float, default=1.0,
-                            help="Segundos entre requests (respeta el rate-limit de OMDb)")
+        parser.add_argument(
+            "--sleep",
+            type=float,
+            default=1.0,
+            help="Segundos entre requests (respeta el rate-limit de OMDb)",
+        )
 
     def handle(self, *args, **opts):
         path = opts["file"]
@@ -61,7 +67,9 @@ class Command(BaseCommand):
                         )
                     else:
                         obj, created = Pelicula.objects.update_or_create(
-                            titulo=payload["titulo"], anio=payload["anio"], defaults=payload
+                            titulo=payload["titulo"],
+                            anio=payload["anio"],
+                            defaults=payload,
                         )
                     if created:
                         creadas += 1
@@ -74,6 +82,8 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.ERROR(f"! {titulo}: {e}"))
                 time.sleep(delay)
 
-        self.stdout.write(self.style.SUCCESS(
-            f"Listo. Total líneas: {total} | Creadas: {creadas} | Actualizadas: {act} | Fallos: {fallos}"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Listo. Total líneas: {total} | Creadas: {creadas} | Actualizadas: {act} | Fallos: {fallos}"
+            )
+        )

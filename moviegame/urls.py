@@ -12,17 +12,22 @@ urlpatterns = [
     path("how-to/", views.howto_view, name="howto"),
     path("panel/", views.admin_dashboard, name="admin_dashboard"),
     path("panel/set-daily/", views.admin_set_daily, name="admin_set_daily"),
-
     # API
     path("api/intentos/", views.api_intentos, name="api_intentos"),
     path("api/autocomplete/", views.api_autocomplete, name="api_autocomplete"),
-
     # Auth
-    path("login/", auth_views.LoginView.as_view(
-        template_name="moviegame/login.html",
-        redirect_authenticated_user=True
-    ), name="login"),
+    path(
+        "login/",
+        auth_views.LoginView.as_view(
+            template_name="moviegame/login.html", redirect_authenticated_user=True
+        ),
+        name="login",
+    ),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("register/", views.register_view, name="register"),
-    path("logout/", auth_views.LogoutView.as_view(next_page="moviegame:login"), name="logout"),
+    path(
+        "logout/",
+        auth_views.LogoutView.as_view(next_page="moviegame:login"),
+        name="logout",
+    ),
 ]

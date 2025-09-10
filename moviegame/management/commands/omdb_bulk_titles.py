@@ -13,21 +13,45 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
-        parser.add_argument("--file", required=True, help="Ruta al CSV UTF-8 con columnas title,year")
-        parser.add_argument("--sleep", type=float, default=0.8, help="Delay entre requests (seg.)")
-        parser.add_argument("--start", type=int, default=0, help="Índice inicial (0-based) para reanudar")
-        parser.add_argument("--limit", type=int, default=0, help="Máximo de filas a procesar (0 = todas)")
-        parser.add_argument("--only-missing", dest="only_missing", action="store_true",
-                            help="Solo procesar títulos que aún no existen por imdb_id o (titulo,año)")
-        parser.add_argument("--require-fields", dest="require_fields", action="store_true",
-                            help="Descartar resultados sin imdbVotes/rating/duration (no se importan).")
+        parser.add_argument(
+            "--file", required=True, help="Ruta al CSV UTF-8 con columnas title,year"
+        )
+        parser.add_argument(
+            "--sleep", type=float, default=0.8, help="Delay entre requests (seg.)"
+        )
+        parser.add_argument(
+            "--start",
+            type=int,
+            default=0,
+            help="Índice inicial (0-based) para reanudar",
+        )
+        parser.add_argument(
+            "--limit",
+            type=int,
+            default=0,
+            help="Máximo de filas a procesar (0 = todas)",
+        )
+        parser.add_argument(
+            "--only-missing",
+            dest="only_missing",
+            action="store_true",
+            help="Solo procesar títulos que aún no existen por imdb_id o (titulo,año)",
+        )
+        parser.add_argument(
+            "--require-fields",
+            dest="require_fields",
+            action="store_true",
+            help="Descartar resultados sin imdbVotes/rating/duration (no se importan).",
+        )
 
     def handle(self, *args, **opts):
         path = opts["file"]
         delay = max(0.2, float(opts["sleep"]))
         start = max(0, int(opts["start"]))
         limit = max(0, int(opts["limit"]))
-        only_missing = bool(opts.get("only_missing", False))      # <-- nombres con underscore
+        only_missing = bool(
+            opts.get("only_missing", False)
+        )  # <-- nombres con underscore
         require_fields = bool(opts.get("require_fields", False))  # <--
 
         client = OMDbClient()
@@ -48,7 +72,9 @@ class Command(BaseCommand):
             rows = rows[start:end]
 
         total = len(rows)
-        self.stdout.write(self.style.NOTICE(f"Procesando {total} filas (delay {delay}s) ..."))
+        self.stdout.write(
+            self.style.NOTICE(f"Procesando {total} filas (delay {delay}s) ...")
+        )
 
         for row in rows:
             title = (row.get("title") or "").strip()
@@ -61,7 +87,9 @@ class Command(BaseCommand):
 
             try:
                 if only_missing:
-                    exists = Pelicula.objects.filter(titulo__iexact=title, anio=year or 0).exists()
+                    exists = Pelicula.objects.filter(
+                        titulo__iexact=title, anio=year or 0
+                    ).exists()
                     if exists:
                         skip += 1
                         continue
@@ -70,9 +98,17 @@ class Command(BaseCommand):
                 payload = mapear_a_pelicula_dict(data)
 
                 if require_fields:
-                    if not (payload.get("imdb_votes") and payload.get("imdb_rating") and payload.get("duracion_min")):
+                    if not (
+                        payload.get("imdb_votes")
+                        and payload.get("imdb_rating")
+                        and payload.get("duracion_min")
+                    ):
                         skip += 1
-                        self.stdout.write(self.style.WARNING(f"- skip (faltan campos): {title} {year or ''}"))
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"- skip (faltan campos): {title} {year or ''}"
+                            )
+                        )
                         time.sleep(delay)
                         continue
 
@@ -83,11 +119,15 @@ class Command(BaseCommand):
                         )
                     else:
                         Pelicula.objects.update_or_create(
-                            titulo=payload["titulo"], anio=payload["anio"], defaults=payload
+                            titulo=payload["titulo"],
+                            anio=payload["anio"],
+                            defaults=payload,
                         )
 
                 ok += 1
-                self.stdout.write(self.style.SUCCESS(f"✓ {payload['titulo']} ({payload['anio']})"))
+                self.stdout.write(
+                    self.style.SUCCESS(f"✓ {payload['titulo']} ({payload['anio']})")
+                )
             except (OMDbError, Exception) as e:
                 fail += 1
                 self.stdout.write(self.style.ERROR(f"✗ {title} {year or ''}: {e}"))

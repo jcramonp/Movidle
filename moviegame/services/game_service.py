@@ -7,18 +7,25 @@ from django.db import transaction
 from django.utils import timezone
 
 from ..models import (
-    Pelicula, Jugador, Partida, Intento, Feedback, PeliculaDelDia,
-    ColorCategoria, EstadoPartida
+    Pelicula,
+    Jugador,
+    Partida,
+    Intento,
+    Feedback,
+    PeliculaDelDia,
+    ColorCategoria,
+    EstadoPartida,
 )
 
 # =========================
 # Config de reglas
 # =========================
 MAX_INTENTOS = 10
-YEAR_DELTA = 5           # ±5 años -> AMARILLO
-DUR_DELTA = 30           # ±30 min -> AMARILLO
-VOTES_DELTA = 100_000    # ±100k votos -> AMARILLO
-RATING_DELTA = 1.0       # ±1.0 -> AMARILLO
+YEAR_DELTA = 5  # ±5 años -> AMARILLO
+DUR_DELTA = 30  # ±30 min -> AMARILLO
+VOTES_DELTA = 100_000  # ±100k votos -> AMARILLO
+RATING_DELTA = 1.0  # ±1.0 -> AMARILLO
+
 
 # =========================
 # Resultado que devolvemos a la API
@@ -48,6 +55,7 @@ class ResultadoIntento:
     estado_partida: str
     intentos_restantes: int
 
+
 # =========================
 # Utilidades
 # =========================
@@ -56,15 +64,17 @@ def _norm(s: str | None) -> str:
     s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
     return s.strip().lower()
 
+
 def _arrow(a: int | float | None, b: int | float | None) -> str:
     # retorna "UP" si debes SUBIR para llegar a b, "DOWN" si debes BAJAR
     if a is None or b is None:
         return ""
-    if b > a:        # objetivo (b) es MAYOR que el intento (a) -> sube
+    if b > a:  # objetivo (b) es MAYOR que el intento (a) -> sube
         return "UP"
-    if b < a:        # objetivo (b) es MENOR que el intento (a) -> baja
+    if b < a:  # objetivo (b) es MENOR que el intento (a) -> baja
         return "DOWN"
     return ""
+
 
 def _band_color(diff: float, band: float) -> ColorCategoria:
     if diff == 0:
@@ -72,6 +82,7 @@ def _band_color(diff: float, band: float) -> ColorCategoria:
     if abs(diff) <= band:
         return ColorCategoria.AMARILLO
     return ColorCategoria.GRIS
+
 
 # =========================
 # Selección de la película (admin)
@@ -82,15 +93,14 @@ def seleccionar_pelicula_diaria(fecha: date | None = None) -> Pelicula:
     Si hoy no hay, usa la última seleccionada para no bloquear el juego.
     """
     fecha = fecha or timezone.localdate()
-    sel = (PeliculaDelDia.objects.filter(fecha=fecha)
-           .select_related("pelicula").first())
+    sel = PeliculaDelDia.objects.filter(fecha=fecha).select_related("pelicula").first()
     if sel:
         return sel.pelicula
-    last = (PeliculaDelDia.objects.order_by("-fecha")
-            .select_related("pelicula").first())
+    last = PeliculaDelDia.objects.order_by("-fecha").select_related("pelicula").first()
     if last:
         return last.pelicula
     raise RuntimeError("El administrador debe seleccionar una película en el panel.")
+
 
 # =========================
 # Comparadores (7 bloques)
@@ -99,11 +109,15 @@ def _color_anio(adiv: Pelicula, sec: Pelicula) -> tuple[ColorCategoria, str]:
     color = _band_color(adiv.anio - sec.anio, YEAR_DELTA)
     return color, _arrow(adiv.anio, sec.anio)
 
-def _color_popularidad_por_votos(adiv: Pelicula, sec: Pelicula) -> tuple[ColorCategoria, str]:
+
+def _color_popularidad_por_votos(
+    adiv: Pelicula, sec: Pelicula
+) -> tuple[ColorCategoria, str]:
     va = adiv.imdb_votes or 0
     vb = sec.imdb_votes or 0
     color = _band_color(va - vb, VOTES_DELTA)  # verde=igual, amarillo si ±100k
     return color, _arrow(va, vb)
+
 
 def _color_generos(adiv: Pelicula, sec: Pelicula) -> ColorCategoria:
     a = set(_norm(x) for x in adiv.lista_generos())
@@ -125,8 +139,14 @@ def _color_duracion(adiv: Pelicula, sec: Pelicula) -> tuple[ColorCategoria, str]
     color = _band_color(da - db, DUR_DELTA)
     return color, _arrow(da, db)
 
+
 def _color_director(adiv: Pelicula, sec: Pelicula) -> ColorCategoria:
-    return ColorCategoria.VERDE if _norm(adiv.director) == _norm(sec.director) else ColorCategoria.GRIS
+    return (
+        ColorCategoria.VERDE
+        if _norm(adiv.director) == _norm(sec.director)
+        else ColorCategoria.GRIS
+    )
+
 
 def _color_actores(adiv: Pelicula, sec: Pelicula) -> ColorCategoria:
     a = set(_norm(x) for x in adiv.lista_actores())
@@ -139,6 +159,7 @@ def _color_actores(adiv: Pelicula, sec: Pelicula) -> ColorCategoria:
         return ColorCategoria.VERDE
     return ColorCategoria.AMARILLO
 
+
 def _color_rating(adiv: Pelicula, sec: Pelicula) -> ColorCategoria:
     ra = float(adiv.imdb_rating) if adiv.imdb_rating is not None else None
     rb = float(sec.imdb_rating) if sec.imdb_rating is not None else None
@@ -150,11 +171,14 @@ def _color_rating(adiv: Pelicula, sec: Pelicula) -> ColorCategoria:
         return ColorCategoria.AMARILLO
     return ColorCategoria.GRIS
 
+
 # =========================
 # Registrar intento
 # =========================
 @transaction.atomic
-def registrar_intento(jugador: Jugador, pelicula_adivinada: Pelicula) -> ResultadoIntento:
+def registrar_intento(
+    jugador: Jugador, pelicula_adivinada: Pelicula
+) -> ResultadoIntento:
     fecha = timezone.localdate()
     secreta = seleccionar_pelicula_diaria(fecha)
 
@@ -193,15 +217,18 @@ def registrar_intento(jugador: Jugador, pelicula_adivinada: Pelicula) -> Resulta
     cR = _color_rating(pelicula_adivinada, secreta)
 
     # Correcto solo si es EXACTAMENTE la película secreta
-    es_ok = (pelicula_adivinada.id == secreta.id)
+    es_ok = pelicula_adivinada.id == secreta.id
 
     # Guardar feedback
     Feedback.objects.create(
         intento=intento,
-        color_anio=cA, flecha_anio=aA,
-        color_popularidad=cP, flecha_popularidad=aP,
+        color_anio=cA,
+        flecha_anio=aA,
+        color_popularidad=cP,
+        flecha_popularidad=aP,
         color_genero=cG,
-        color_duracion=cD, flecha_duracion=aD,
+        color_duracion=cD,
+        flecha_duracion=aD,
         color_direccion=cDir,
         color_actores=cAct,
         color_rating=cR,
@@ -224,10 +251,13 @@ def registrar_intento(jugador: Jugador, pelicula_adivinada: Pelicula) -> Resulta
     return ResultadoIntento(
         intento_id=intento.id,
         numero_intento=num,
-        color_anio=cA, arrow_anio=aA,
-        color_popularidad=cP, arrow_popularidad=aP,
+        color_anio=cA,
+        arrow_anio=aA,
+        color_popularidad=cP,
+        arrow_popularidad=aP,
         color_genero=cG,
-        color_duracion=cD, arrow_duracion=aD,
+        color_duracion=cD,
+        arrow_duracion=aD,
         color_direccion=cDir,
         color_actores=cAct,
         color_rating=cR,
