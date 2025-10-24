@@ -39,6 +39,65 @@ body, body.bg{
 
 .container{max-width:980px;margin:18px auto;padding:0 14px}
 
+/* ===== Navbar & Botones (ajuste suave) ===== */
+
+/* Paleta: usa tu naranja actual como primario; si ya lo tienes definido, se respeta */
+:root{
+  --brand: #ff6b5f;           /* Ajusta si tu proyecto usa otro naranja */
+  --brand-600: #ff5a4b;
+  --border: #e5e7eb;
+  --bg-soft: #f7fafc;
+  --text: #1f2937;
+}
+
+/* Contenedor del header (si ya tienes .header/.container no se rompen) */
+.header { background:#fff; border-bottom:1px solid var(--border); }
+.header .container { display:flex; gap:12px; align-items:center; }
+
+/* Botón base del navbar */
+.nav .btn{
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text);
+  padding:8px 12px;
+  border-radius:12px;
+  transition:transform .06s ease, background .12s ease, border-color .12s ease;
+}
+.nav .btn:hover{ background:#fff; border-color:#d1d5db; transform:translateY(-1px); }
+.nav .btn:focus-visible{ outline:3px solid rgba(255,107,95,.25); outline-offset:2px; }
+
+/* Activo en navbar */
+.nav .btn.is-active{
+  background:var(--brand);
+  border-color:var(--brand);
+  color:#fff;
+}
+
+/* Botón de acción principal (Registro, etc.) */
+.btn.btn-primary{
+  background:var(--brand);
+  border-color:var(--brand);
+  color:#fff;
+}
+.btn.btn-primary:hover{ background:var(--brand-600); border-color:var(--brand-600); }
+
+/* Chip de usuario (si lo usas) */
+.user-chip{ color:#6b7280; }
+
+/* Mensajes (Django messages) unificados */
+.messages{ display:grid; gap:10px; margin:12px 0; }
+.alert{ padding:10px 12px; border-radius:10px; border:1px solid var(--border); }
+.alert-info{ background:#eff6ff; border-color:#bfdbfe; color:#1e3a8a; }
+.alert-success{ background:#ecfdf5; border-color:#a7f3d0; color:#065f46; }
+.alert-warning{ background:#fffbeb; border-color:#fde68a; color:#92400e; }
+.alert-error{ background:#fef2f2; border-color:#fecaca; color:#991b1b; }
+
+/* Responsivo mínimo */
+@media (max-width:640px){
+  .nav{ overflow-x:auto; padding-bottom:4px; }
+}
+
+
 /* ====== Home (hero) ====== */
 .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 0 80px}
 .hero-logo{ width:400px; height:auto; }
@@ -201,3 +260,327 @@ body, body.bg{
 .suggest .opt{
   color: var(--ink);
 }
+
+/* === Movidle – retoque sutil pro (append) === */
+
+/* 1) Tokens coherentes con el logo */
+:root{
+  --brand: var(--red);       /* usa tu rojo del logo */
+  --brand-600: #e65348;      /* hover un poco más oscuro */
+  --radius-pill: 999px;      /* para pills tipo logo */
+  --shadow-soft: 0 6px 18px rgba(16,24,40,.06);
+}
+
+/* 2) Suaviza tipografía y antialiasing */
+body{ -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+
+/* 3) Header y marca: pill como el óvalo del logo */
+.header{ background:#fff; border-bottom:1px solid var(--border); backdrop-filter:saturate(120%) blur(0px); }
+.brand-btn{
+  background:var(--brand);
+  border:1px solid var(--brand);
+  color:#fff;
+  padding:8px 14px;
+  border-radius:var(--radius-pill);
+  box-shadow:var(--shadow-soft);
+  transform:translateZ(0);
+  transition:background .15s ease, border-color .15s ease, transform .06s ease;
+}
+.brand-btn:hover{ background:var(--brand-600); border-color:var(--brand-600); transform:translateY(-1px); }
+.brand-btn:focus-visible{ outline:3px solid rgba(255,90,78,.25); outline-offset:3px; }
+
+/* 4) Navbar: botones neutros, activo en rojo (pill) */
+.nav .btn, .nav form .btn{
+  background:#fff;
+  color:var(--ink);
+  border:1px solid var(--border);
+  border-radius:var(--radius-pill);
+  padding:8px 12px;
+  box-shadow:0 1px 0 rgba(0,0,0,.02);
+  transition:background .12s ease, border-color .12s ease, transform .06s ease;
+}
+.nav .btn:hover, .nav form .btn:hover{ border-color:#d1d5db; transform:translateY(-1px); }
+.nav .btn:focus-visible, .nav form .btn:focus-visible{ outline:3px solid rgba(255,90,78,.25); outline-offset:2px; }
+
+.nav .btn.is-active{
+  background:var(--brand);
+  border-color:var(--brand);
+  color:#fff;
+  box-shadow:var(--shadow-soft);
+}
+
+/* 5) Botón de acción principal (Registro/Play) consistente */
+.btn.btn-primary,
+.btn.big{
+  background:var(--brand);
+  border:1px solid var(--brand);
+  color:#fff;
+  border-radius:16px;
+  box-shadow:var(--shadow-soft);
+}
+.btn.btn-primary:hover,
+.btn.big:hover{ background:var(--brand-600); border-color:var(--brand-600); }
+
+/* 6) Hero / logo: escala y respiración en pantallas chicas */
+.hero{ padding:56px 0 72px; }
+.hero-logo{ width:min(420px, 70vw); height:auto; display:block; margin-inline:auto; }
+.hero-title{ letter-spacing:.5px; }
+.hero .btn.big{ margin-top:8px; }
+
+/* 7) Tarjetas oscuras: contraste sutil y bordes más suaves */
+.card{ box-shadow: var(--shadow-soft); border-radius:16px; }
+.tile{ border-radius:14px; }
+
+/* 8) Formularios: foco accesible y bordes limpios */
+.form-card input[type="text"],
+.form-card input[type="password"],
+.form-card input[type="email"]{
+  border-color:#ffd2cc;
+  border-radius:14px;
+}
+.form-card input:focus{
+  border-color:#fff;
+  box-shadow:0 0 0 3px rgba(255,90,78,.25);
+}
+
+/* 9) Mensajes: borde y radio coherentes */
+.alert{ border-radius:14px; }
+
+/* 10) Responsive navbar scrollable si no entra */
+@media (max-width:640px){
+  .nav{ overflow-x:auto; padding-bottom:4px; }
+}
+/* ===== Forms – UX sutil y accesible ===== */
+.form { display:grid; gap:14px; max-width:480px; margin-inline:auto; }
+.field { display:grid; gap:6px; }
+.label { font-weight:600; }
+.input, .select, .textarea {
+  width:100%;
+  padding:10px 12px;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  background:#fff;
+  transition: box-shadow .12s ease, border-color .12s ease, transform .06s ease;
+}
+.input:hover{ border-color:#d1d5db; }
+.input:focus-visible, .select:focus-visible, .textarea:focus-visible{
+  outline:none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(255,90,78,.25);
+}
+.help { font-size:12px; color:#6b7280; }
+.error { font-size:12px; color:#991b1b; }
+
+.form-actions { display:flex; gap:8px; align-items:center; }
+.form .btn-primary { border-radius:14px; padding:10px 14px; }
+
+/* ===== PLAY page polish ===== */
+
+/* Barra de guess centrada */
+.guess-bar{
+  max-width: 760px;
+  margin: 16px auto 12px;
+}
+.guess-input{
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 999px; /* pill */
+  background: #fff;
+  outline: none;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+.guess-input:focus{
+  border-color: var(--brand, #ff5a4e);
+  box-shadow: 0 0 0 3px rgba(255,90,78,.25);
+}
+
+/* Contenedor general y título más grande */
+.game-shell{
+  max-width: 1100px;
+  margin: 12px auto 0;
+}
+.movie-title{
+  color: var(--text, #1f2937);
+  font-weight: 800;
+  font-size: clamp(22px, 3.2vw, 32px);
+  letter-spacing: .2px;
+  margin: 8px 0 14px;
+}
+
+/* Grid centrado para las tarjeticas */
+.facts-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+/* Tarjeta base (blanca al inicio), animación de entrada y hover pro */
+.fact-card{
+  background: #fff;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 10px 24px rgba(16,24,40,.06);
+  transform: translateY(6px);
+  opacity: 0;
+  animation: fact-in .35s ease forwards;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.fact-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(16,24,40,.10);
+}
+
+/* Estilos internos */
+.fact-title{
+  margin: 0 0 6px;
+  font-weight: 800;
+  letter-spacing:.2px;
+}
+.fact-value{ margin:0; }
+
+/* Si tienes tarjetas que luego cambian a verde/amarillo,
+   déjalas blancas al inicio con esta clase */
+.fact-card.is-neutral{
+  background: #fff !important;
+  color: var(--text, #1f2937) !important;
+  border-color: var(--border, #e5e7eb) !important;
+}
+
+/* Animación con “stagger” sutil */
+@keyframes fact-in{
+  from{ opacity:0; transform: translateY(10px) scale(.98); }
+  to{   opacity:1; transform: translateY(0)   scale(1); }
+}
+.facts-grid .fact-card:nth-child(1){ animation-delay: .02s; }
+.facts-grid .fact-card:nth-child(2){ animation-delay: .06s; }
+.facts-grid .fact-card:nth-child(3){ animation-delay: .10s; }
+.facts-grid .fact-card:nth-child(4){ animation-delay: .14s; }
+.facts-grid .fact-card:nth-child(5){ animation-delay: .18s; }
+.facts-grid .fact-card:nth-child(6){ animation-delay: .22s; }
+
+/* Responsivo */
+@media (max-width:640px){
+  .movie-title{ text-align:center; }
+}
+/* ===== Ajustes /play pedidos ===== */
+
+/* 1) Barra de búsqueda a lo ancho del contenedor */
+.play-top{ max-width:1100px; margin:0 auto; padding:0 8px; }
+.guess-bar{ width:100%; max-width:none; }   /* antes: max-width:760px */
+.guess-input{ width:100%; }                 /* se mantiene pill + focus */
+
+/* 2) Título de película con el rojo del logo */
+.g-head.movie-title,
+.movie-title{
+  color: var(--brand, #ff5a4e);   /* usa tu token si ya existe */
+  font-weight: 800;
+}
+/* ===== Centrar la última fila de tarjetas ===== */
+.guess-card .tiles{
+  display: flex !important;        /* en lugar de grid */
+  flex-wrap: wrap !important;      /* que bajen a nuevas filas */
+  justify-content: center !important; /* centra la última fila */
+  gap: 12px !important;
+}
+
+/* Tamaño flexible de cada tarjeta */
+.guess-card .tiles .tile{
+  flex: 1 1 240px !important;      /* ancho mínimo ~240px */
+  max-width: 340px !important;     /* para que no se estiren demasiado */
+  margin: 0 !important;            /* evita desplazamientos raros */
+}
+
+/* (Opcional) Limpiar reglas previas de grid para que no interfieran */
+.guess-card .tiles{ grid-template-columns: unset !important; }
+
+/* ===== Stats – pulido visual acorde a la marca ===== */
+:root{
+  --brand:#ff5a4e;
+  --brand-600:#e65348;
+  --ink:#0f172a;
+  --border:#e5e7eb;
+}
+
+/* Card principal (ya hereda .card.red) */
+.stats-card{
+  border-radius:18px;
+  box-shadow:0 18px 40px rgba(16,24,40,.12);
+}
+.stats-head{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  margin-bottom:10px;
+}
+.stats-head h1{ margin:0; font-weight:800; }
+.chip{
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.35);
+  color:#fff; padding:6px 10px; border-radius:999px; font-weight:600;
+}
+
+/* Grid de KPIs */
+.stat-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(220px,1fr));
+  gap:12px;
+  margin-bottom:14px;
+}
+.stat-item{
+  background: rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:14px;
+  padding:12px 14px;
+  color:#fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.15);
+}
+.stat-label{ display:block; font-weight:700; opacity:.9; margin-bottom:4px; }
+.stat-value{
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight:800;
+  letter-spacing:.2px;
+}
+
+/* Título sección barras */
+.dist-title{ margin:18px 0 8px; color:#fff; }
+
+/* Barras de distribución */
+.dist-list{ list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+.dist-row{
+  display:grid;
+  grid-template-columns: 130px 1fr auto;
+  align-items:center;
+  gap:10px;
+}
+.dist-try{ color:#fff; font-weight:700; }
+.dist-count{
+  color:#fff; font-weight:800; min-width:36px; text-align:right;
+}
+
+/* La barra usa --pct (0–100). Si envías conteo crudo, puedes normalizar luego.
+   Aquí asumimos porcentaje; se recorta a 100% por seguridad. */
+.dist-bar{
+  --w: clamp(0%, calc(var(--pct,0) * 1%), 100%);
+  position:relative;
+  display:block; height:18px; border-radius:999px;
+  background: rgba(255,255,255,.25);
+  overflow:hidden;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.45);
+}
+.dist-bar::after{
+  content:"";
+  position:absolute; inset:0;
+  width: var(--w);
+  background: linear-gradient(90deg, #fff, #ffd3cf 30%, var(--brand) 100%);
+  border-radius:999px;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.06);
+  transition: width .45s ease;
+}
+
+/* Responsive */
+@media (max-width:720px){
+  .stat-grid{ grid-template-columns: 1fr; }
+  .dist-row{ grid-template-columns: 110px 1fr auto; }
+}
+

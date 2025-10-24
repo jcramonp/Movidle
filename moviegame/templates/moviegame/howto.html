@@ -1,58 +1,208 @@
 {% extends "moviegame/base.html" %}
+{% block title %}Cómo jugar • Movidle{% endblock %}
+
+{% block head %}
+<style>
+:root{ --brand:#ff5a4e; --ink:#0f172a; --muted:#6b7280; --border:#e5e7eb; }
+.howto-shell{ max-width: 980px; margin: 0 auto; }
+
+/* Tabs */
+.tabs{ display:flex; gap:10px; align-items:center; margin-bottom:14px; }
+.tab-btn{
+  appearance:none; border:1px solid var(--border);
+  background:#fff; color:var(--ink);
+  padding:8px 12px; border-radius:999px; font-weight:600; cursor:pointer;
+  transition:background .12s ease, transform .06s ease;
+}
+.tab-btn:hover{ background:#fafafa; transform:translateY(-1px); }
+.tab-btn.is-active{ background:var(--brand); color:#fff; border-color:var(--brand); }
+
+/* Cards */
+.how-card{
+  background:#fff; border:1px solid var(--border);
+  border-radius:16px; padding:16px; box-shadow:0 12px 24px rgba(16,24,40,.06);
+}
+.how-hero{
+  background: var(--brand); color:#fff; border:0; margin-bottom:14px;
+}
+.how-hero h1{ margin:0 0 8px; font-weight:800; }
+
+/* Step blocks */
+.step{ display:grid; gap:10px; margin:14px 0; }
+.step h3{ margin:0; font-weight:800; }
+.mock-search{
+  width:min(560px, 90%); border:1px solid var(--border); border-radius:999px;
+  padding:10px 14px; background:#fff; color:var(--muted);
+}
+.mock-tiles{ display:flex; flex-wrap:wrap; gap:10px; }
+.mock-tile{
+  border-radius:12px; padding:10px 12px; font-weight:700; color:#fff;
+}
+.mock-tile.green{ background:#10B981; }
+.mock-tile.yellow{ background:#EAB308; }
+.mock-tile.gray{ background:#374151; }
+
+/* Atributos list */
+.attr-list{ display:grid; gap:12px; }
+.attr-item{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:12px; }
+.attr-item h4{ margin:0 0 6px; font-weight:800; }
+.attr-item p{ margin:0 0 10px; color:var(--muted); }
+.badges{ display:flex; gap:8px; flex-wrap:wrap; }
+.badge{
+  padding:6px 10px; border-radius:10px; font-weight:700; border:1px solid transparent;
+}
+.badge.gray{ background:#374151; color:#fff; }
+.badge.yellow{ background:#FEF3C7; color:#92400E; border-color:#FDE68A; }
+.badge.green{ background:#D1FAE5; color:#065F46; border-color:#A7F3D0; }
+
+/* Hide/Show panes */
+.pane{ display:none; }
+.pane.is-active{ display:block; }
+
+/* Responsive */
+@media (max-width:640px){
+  .mock-tiles{ justify-content:center; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const tabs = document.querySelectorAll('[data-tab]');
+  const panes = document.querySelectorAll('.pane');
+  function activate(name){
+    tabs.forEach(b=>b.classList.toggle('is-active', b.dataset.tab===name));
+    panes.forEach(p=>p.classList.toggle('is-active', p.id===name));
+    history.replaceState(null, '', `#${name}`);
+  }
+  tabs.forEach(b=> b.addEventListener('click', ()=> activate(b.dataset.tab)));
+  // abrir con hash si viene /how-to/#atributos
+  const initial = location.hash?.replace('#','');
+  if(initial && document.getElementById(initial)){ activate(initial); }
+  else{ activate('pasos'); }
+});
+</script>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-  <div class="card red form-card">
-    <h1 style="margin:0 0 10px">Cómo jugar</h1>
+<div class="howto-shell">
 
-    <p>Adivina la película en <strong>10 intentos</strong>. Cada intento revela pistas por categorías con
-      <strong>colores</strong> y, en los valores numéricos, <strong>flechas</strong> que te indican
-      hacia dónde moverte para alcanzar la correcta.</p>
-
-    <ul class="howto-list">
-      <li>
-        <strong>Año:</strong>
-        <span>Verde si es exacto.</span>
-        <span>Amarillo si la diferencia es ≤ 5.</span>
-        <span>Gris si es mayor.</span>
-        <span class="muted">Flecha ▲ si debes subir años, ▼ si debes bajar.</span>
-      </li>
-      <li>
-        <strong>Popularidad (votos IMDb):</strong>
-        <span>Verde si coincide.</span>
-        <span>Amarillo si la diferencia es ≤ 100&nbsp;000.</span>
-        <span>Gris si es mayor.</span>
-        <span class="muted">Flecha ▲ si debes subir votos, ▼ si debes bajar.</span>
-      </li>
-      <li>
-        <strong>Géneros:</strong>
-        <span>Verde si coinciden todos.</span>
-        <span>Amarillo si comparten alguno, pero no todos.</span>
-        <span>Gris si no comparten ninguno.</span>
-      </li>
-      <li>
-        <strong>Duración:</strong>
-        <span>Verde si es exacta.</span>
-        <span>Amarillo si la diferencia es ≤ 30&nbsp;min.</span>
-        <span>Gris si es mayor.</span>
-        <span class="muted">Flecha ▲ si debes subir minutos, ▼ si debes bajar.</span>
-      </li>
-      <li>
-        <strong>Director:</strong>
-        <span>Verde si coincide, Gris si no.</span>
-      </li>
-      <li>
-        <strong>Actores:</strong>
-        <span>Verde si coinciden todos.</span>
-        <span>Amarillo si comparten alguno, pero no todos.</span>
-        <span>Gris si no comparten ninguno.</span>
-      </li>
-      <li>
-        <strong>IMDb Rating:</strong>
-        <span>Verde si es exacto.</span>
-        <span>Amarillo si la diferencia es ≤ 1.0.</span>
-        <span>Gris si es mayor.</span>
-      </li>
-    </ul>
+  <!-- Header / tabs -->
+  <div class="how-card how-hero">
+    <h1>Cómo jugar</h1>
+    <p style="margin:0 0 8px;">Adivina la película en <strong>10 intentos</strong>. Cada intento revela pistas por categorías con <strong>colores</strong> y, en los valores numéricos, <strong>flechas</strong> que te indican hacia dónde moverte.</p>
+    <div class="tabs">
+      <button class="tab-btn is-active" data-tab="pasos">Cómo jugar</button>
+      <button class="tab-btn" data-tab="atributos">Atributos</button>
+    </div>
   </div>
+
+  <!-- Pestaña 1: Paso a paso -->
+  <section id="pasos" class="pane is-active">
+    <div class="how-card">
+      <div class="step">
+        <h3>Paso 1</h3>
+        <p>Escribe una película en la barra de búsqueda y envía tu intento.</p>
+        <input class="mock-search" placeholder="Type a guess here…" disabled>
+      </div>
+
+      <div class="step">
+        <h3>Paso 2</h3>
+        <p>Observa los atributos revelados. El color indica cuán cerca estás.</p>
+        <div class="mock-tiles">
+          <span class="mock-tile yellow">Año 2002 ▲</span>
+          <span class="mock-tile green">Géneros ✓</span>
+          <span class="mock-tile gray">IMDb Rating</span>
+          <span class="mock-tile gray">Popularidad</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <h3>Paso 3</h3>
+        <p>Usa las <strong>flechas</strong> en atributos numéricos para subir/bajar y acercarte. ¡Sigue intentando hasta acertar!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pestaña 2: Atributos -->
+  <section id="atributos" class="pane">
+    <div class="how-card">
+      <div class="attr-list">
+
+        <div class="attr-item">
+          <h4>Año</h4>
+          <p>Comparación del año de la película.</p>
+          <div class="badges">
+            <span class="badge gray">Incorrecto</span>
+            <span class="badge yellow">± 5 años</span>
+            <span class="badge green">Correcto</span>
+          </div>
+          <p style="margin-top:6px;">Flechas: ▲ si debes subir años, ▼ si debes bajar.</p>
+        </div>
+
+        <div class="attr-item">
+          <h4>Popularidad (votos IMDb)</h4>
+          <p>Qué tan popular es la película respecto a otras.</p>
+          <div class="badges">
+            <span class="badge gray">Incorrecto</span>
+            <span class="badge yellow">± 100 000</span>
+            <span class="badge green">Correcto</span>
+          </div>
+          <p style="margin-top:6px;">Flechas: ▲ si debes subir votos, ▼ si debes bajar.</p>
+        </div>
+
+        <div class="attr-item">
+          <h4>Géneros</h4>
+          <p>Coincidencia de categorías de género.</p>
+          <div class="badges">
+            <span class="badge gray">Sin coincidencia</span>
+            <span class="badge yellow">Comparten alguno</span>
+            <span class="badge green">Todos coinciden</span>
+          </div>
+        </div>
+
+        <div class="attr-item">
+          <h4>Duración</h4>
+          <p>Comparación en minutos.</p>
+          <div class="badges">
+            <span class="badge gray">Incorrecto</span>
+            <span class="badge yellow">± 30 min</span>
+            <span class="badge green">Correcto</span>
+          </div>
+          <p style="margin-top:6px;">Flechas: ▲ si debes subir minutos, ▼ si debes bajar.</p>
+        </div>
+
+        <div class="attr-item">
+          <h4>Director</h4>
+          <p>Coincidencia del/la director/a principal.</p>
+          <div class="badges">
+            <span class="badge gray">No coincide</span>
+            <span class="badge green">Coincide</span>
+          </div>
+        </div>
+
+        <div class="attr-item">
+          <h4>Actores</h4>
+          <p>Elenco principal.</p>
+          <div class="badges">
+            <span class="badge gray">Sin coincidencia</span>
+            <span class="badge yellow">Comparten alguno</span>
+            <span class="badge green">Todos coinciden</span>
+          </div>
+        </div>
+
+        <div class="attr-item">
+          <h4>IMDb Rating</h4>
+          <p>Puntaje promedio en IMDb.</p>
+          <div class="badges">
+            <span class="badge gray">Incorrecto</span>
+            <span class="badge yellow">± 1.0</span>
+            <span class="badge green">Correcto</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
 </div>
 {% endblock %}

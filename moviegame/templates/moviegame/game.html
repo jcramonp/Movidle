@@ -1,5 +1,6 @@
 {% extends "moviegame/base.html" %}
 {% block title %}Play • Movidle{% endblock %}
+
 {% block head %}
 <script>
 function getCookie(name){const v=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');return v?v.pop():"";}
@@ -34,7 +35,9 @@ function minutes(n){return (n==null)? "" : `${n} min`;}
 function rating(n){return (n==null)? "" : Number(n).toFixed(1);}
 
 function addCard(titulo, j){
-  const card = document.createElement("div"); card.className="guess-card";
+  const card = document.createElement("div");
+  card.className = "guess-card appear";
+
   const tiles =
     tile("Año", j.colorAño, j.arrowAño, j.valAño) +
     tile("Popularidad (votos)", j.colorPopularidad, j.arrowPopularidad, num(j.valPopularidad)) +
@@ -43,7 +46,8 @@ function addCard(titulo, j){
     tile("Director", j.colorDirector, "", j.valDirector) +
     tile("Actores", j.colorActores, "", j.valActores) +
     tile("IMDb Rating", j.colorRating, "", rating(j.valRating));
-  card.innerHTML = `<div class="g-head">${titulo}</div><div class="tiles">${tiles}</div>`;
+
+  card.innerHTML = `<div class="g-head movie-title">${titulo}</div><div class="tiles">${tiles}</div>`;
   document.getElementById("guesses").prepend(card);
 }
 
@@ -67,7 +71,8 @@ async function enviarIntento(id, tituloMostrado){
   }
   if (j.estadoPartida && j.estadoPartida !== "EN_CURSO"){
     openResult(j.revealTitle, j.revealAño, j.revealPoster);
-    input.disabled = true; document.getElementById("btn-buscar").disabled = true;
+    input.disabled = true;
+    const btn = document.getElementById("btn-buscar"); if(btn) btn.disabled = true; // por si existe en tu CSS antiguo
   }
   if (j.error){ console.log(j.error); }
 }
@@ -91,6 +96,84 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 });
 </script>
+
+<style>
+/* ===== /play polish (solo front) ===== */
+
+/* Barra de guess centrada (sin lupa) */
+.guess-bar{ max-width:760px; margin:16px auto 12px; }
+.guess-input{
+  width:100%; padding:14px 16px; border:1px solid var(--border,#e5e7eb);
+  border-radius:999px; background:#fff; outline:none;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+.guess-input:focus{ border-color: var(--brand,#ff5a4e); box-shadow:0 0 0 3px rgba(255,90,78,.25); }
+
+/* Contador y contenedor superior */
+.play-top{ max-width:1100px; margin:0 auto; }
+#guess-counter{ margin:6px 0 4px; font-weight:600; }
+
+/* Grid centrado para tarjetas */
+.guesses{
+  max-width:1100px; margin:12px auto 0;
+  display:grid; gap:16px;
+}
+.guess-card{
+  background: var(--brand-soft, #ff6b5f1a);
+  border: 1px solid rgba(0,0,0,.04);
+  border-radius:16px; padding:16px;
+  box-shadow: 0 10px 24px rgba(16,24,40,.06);
+}
+.guess-card .tiles{
+  display:grid; gap:12px; margin-top:10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* Título de la película más grande */
+.g-head.movie-title{
+  font-size: clamp(22px, 3.2vw, 34px);
+  font-weight: 800; letter-spacing:.2px;
+}
+
+/* Animación de entrada pro (stagger básico) */
+.appear{ animation: cardIn .32s ease both; }
+@keyframes cardIn{
+  from{ opacity:0; transform:translateY(8px) scale(.98); }
+  to{   opacity:1; transform:translateY(0)   scale(1); }
+}
+
+/* Tiles: blancos por defecto (para reemplazar “negros”) */
+.tile{
+  background:#fff; border:1px solid var(--border,#e5e7eb);
+  border-radius:14px; padding:12px;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.tile:hover{ transform:translateY(-2px); box-shadow:0 12px 26px rgba(16,24,40,.08); }
+
+/* Si tu CSS anterior define clases como .dark/.gray/.neutral,
+   las forzamos a blanco al inicio para mantener estética */
+.tile.dark, .tile.gray, .tile.neutral, .tile.default{
+  background:#fff !important; color:var(--text,#1f2937) !important;
+}
+
+/* Etiquetas dentro de cada tile */
+.t-label{ font-weight:800; margin:0 0 6px; }
+.t-sub{ margin:0; }
+.t-arrow{ opacity:.6; margin-left:4px; }
+
+/* Sugerencias del autocomplete (sin tocar tu JS) */
+.suggest{ max-width:760px; margin:8px auto 0; }
+.suggest .opt{
+  padding:8px 10px; border:1px solid var(--border,#e5e7eb); border-top:0;
+  background:#fff; cursor:pointer;
+}
+.suggest .opt:hover{ background:#fafafa; }
+
+/* Responsive */
+@media (max-width:640px){
+  .g-head.movie-title{ text-align:center; }
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -99,14 +182,17 @@ document.addEventListener("DOMContentLoaded", ()=>{
   {% else %}
     <div class="play-top">
       <div id="guess-counter">Guess {{ guess_now }} de {{ max_intentos }}</div>
-      <form id="form-intento" class="search">
+
+      <!-- Barra de búsqueda centrada, SIN lupa -->
+      <form id="form-intento" class="guess-bar" autocomplete="off" novalidate>
         {% csrf_token %}
-        <input id="titulo" placeholder="Type a guess here…" autocomplete="off" />
-        <button id="btn-buscar" class="icon-btn" title="Search">🔍</button>
+        <input id="titulo" class="guess-input" placeholder="Type a guess here…" />
       </form>
+
       <div id="sugerencias" class="suggest"></div>
     </div>
 
+    <!-- Tarjetas centradas con animación -->
     <div id="guesses" class="guesses"></div>
 
     <!-- Modal resultado (solo cuando termina) -->
