@@ -1,4 +1,6 @@
 {% extends "moviegame/base.html" %}
+{% load i18n %}
+
 {% block title %}Play • Movidle{% endblock %}
 
 {% block head %}
@@ -181,12 +183,14 @@ document.addEventListener("DOMContentLoaded", ()=>{
     <div class="card"><p class="muted">{{ no_game_msg }}</p></div>
   {% else %}
     <div class="play-top">
-      <div id="guess-counter">Guess {{ guess_now }} de {{ max_intentos }}</div>
+      <div id="guess-counter">
+        {% blocktrans %}Intento {{ guess_now }} de {{ max_intentos }}{% endblocktrans %}
+      </div>
 
       <!-- Barra de búsqueda centrada, SIN lupa -->
       <form id="form-intento" class="guess-bar" autocomplete="off" novalidate>
         {% csrf_token %}
-        <input id="titulo" class="guess-input" placeholder="Type a guess here…" />
+        <input id="titulo" class="guess-input" placeholder="{% trans 'Ingresa un intento aquí…' %}" />
       </form>
 
       <div id="sugerencias" class="suggest"></div>
@@ -199,7 +203,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     <div id="modal-result" class="modal hidden">
       <div class="modal-card">
         <div class="modal-head">
-          <h3>Today's movie is…</h3>
+          <h3>{% trans "La película de hoy es..." %}</h3>
           <button class="close">×</button>
         </div>
         <img id="res-poster" style="max-height:220px;border-radius:12px;display:none"/>
@@ -208,3 +212,4 @@ document.addEventListener("DOMContentLoaded", ()=>{
     </div>
   {% endif %}
 {% endblock %}
+

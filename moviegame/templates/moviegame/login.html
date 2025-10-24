@@ -1,19 +1,20 @@
 {% extends "moviegame/base.html" %}
+{% load i18n %}
 {% block title %}Iniciar sesión • Movidle{% endblock %}
 
 {% block content %}
 <section class="card red form-card">
-  <h2>Iniciar sesión</h2>
+  <h2>{% trans "Iniciar Sesión" %}</h2>
 
   <form method="post" action="{% url 'moviegame:login' %}">
     {% csrf_token %}
     {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
 
-    <label for="id_username">Usuario</label>
+    <label for="id_username">{% trans "Usuario" %}</label>
     <input id="id_username" name="username" type="text" required autofocus
            placeholder="Tu usuario" value="{{ form.data.username|default_if_none:'' }}">
 
-    <label for="id_password">Contraseña</label>
+    <label for="id_password">{% trans "Contraseña" %}</label>
     <input id="id_password" name="password" type="password" required placeholder="••••••••">
 
     {% if form.non_field_errors %}
@@ -21,7 +22,7 @@
     {% endif %}
 
     <div class="actions">
-      <button type="submit" class="btn">Entrar</button>
+      <button type="submit" class="btn">{% trans "Iniciar Sesión" %}</button>
     </div>
   </form>
 </section>

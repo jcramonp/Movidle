@@ -1,15 +1,16 @@
 {% extends "moviegame/base.html" %}
+{% load i18n %}
 {% block title %}Crear cuenta • Movidle{% endblock %}
 
 {% block content %}
 <section class="card red form-card">
-  <h2>Crear cuenta</h2>
+  <h2>{% trans "Crear cuenta" %}</h2>
 
   <form method="post" action="{% url 'moviegame:register' %}">
     {% csrf_token %}
 
     <!-- Usuario -->
-    <label for="id_username">Usuario</label>
+    <label for="id_username">{% trans "Usuario" %}</label>
     <input id="id_username" name="username" type="text" required autofocus
            placeholder="Tu usuario"
            value="{{ form.data.username|default_if_none:'' }}">
@@ -18,7 +19,7 @@
     {% endfor %}
 
     <!-- Contraseña -->
-    <label for="id_password1">Contraseña</label>
+    <label for="id_password1">{% trans "Contraseña" %}</label>
     <input id="id_password1" name="password1" type="password" required
            placeholder="••••••••" autocomplete="new-password">
     {% for e in form.password1.errors %}
@@ -26,7 +27,7 @@
     {% endfor %}
 
     <!-- Confirmación -->
-    <label for="id_password2">Confirmar contraseña</label>
+    <label for="id_password2">{% trans "Confirmar Contraseña" %}</label>
     <input id="id_password2" name="password2" type="password" required
            placeholder="Repite tu contraseña" autocomplete="new-password">
     {% for e in form.password2.errors %}
@@ -38,7 +39,7 @@
     {% endif %}
 
     <div class="actions">
-      <button type="submit" class="btn">Registrarme</button>
+      <button type="submit" class="btn">{% trans "Registrarme" %}</button>
     </div>
   </form>
 </section>

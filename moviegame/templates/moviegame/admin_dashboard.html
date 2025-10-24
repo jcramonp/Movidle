@@ -1,4 +1,5 @@
 {% extends "moviegame/base.html" %}
+{% load i18n %}
 {% block title %}Panel • Movidle{% endblock %}
 
 {% block head %}
@@ -135,8 +136,12 @@ document.addEventListener("DOMContentLoaded", ()=>{
 <div class="admin-shell">
   <div class="card red">
     <div class="daily-meta">
-      <h2>Película del día</h2>
-      <span class="daily-chip">Hoy: {{ now|date:"D d M" }}</span>
+      <h2>{% trans "Película del día" %}</h2>
+      <span class="daily-chip">
+        {% with today=now|date:"D d M" %}
+          {% blocktrans %}Hoy: {{ today }}{% endblocktrans %}
+        {% endwith %}
+      </span>
     </div>
 
     {% if secreta %}
@@ -144,13 +149,16 @@ document.addEventListener("DOMContentLoaded", ()=>{
         <b>{{ secreta.titulo }}</b> ({{ secreta.anio }})
       </p>
     {% else %}
-      <p class="muted">Aún no hay película seleccionada para hoy.</p>
+      <p class="muted">{% trans "Aún no hay película seleccionada para hoy." %}</p>
     {% endif %}
 
     <div class="search-wrap">
-      <input id="titulo" placeholder="Buscar película para fijar hoy…" autocomplete="off">
+      <input id="titulo"
+             placeholder="{% trans 'Buscar película para fijar hoy…' %}"
+             autocomplete="off">
       <div id="sugerencias" class="suggest hidden"></div>
     </div>
   </div>
 </div>
 {% endblock %}
+

@@ -1,14 +1,15 @@
 {% extends "moviegame/base.html" %}
+{% load i18n %}
 {% load static %}
 {% block title %}Movidle{% endblock %}
 {% block content %}
   <section class="hero">
     <img class="hero-logo" src="{% static 'moviegame/img/logo.png' %}" alt="Movidle">
-    <p class="hero-tag">10 guesses, 500 movies<br/>Will you win today?</p>
+    <p class="hero-tag">{% trans "10 intentos, 500 películas" %}<br/>{% trans "¿Ganarás hoy?" %}</p>
       {% if user.is_staff %}
-          <a class="btn red big" href="{% url 'moviegame:admin_dashboard' %}">Panel</a>
+          <a class="btn red big" href="{% url 'moviegame:admin_dashboard' %}">{% trans "Pánel" %}</a>
       {% else %}
-          <a class="btn red big" href="{% url 'moviegame:game' %}">Play</a>
+          <a class="btn red big" href="{% url 'moviegame:game' %}">{% trans "Jugar" %}</a>
       {% endif %}
   </section>
 {% endblock %}

@@ -584,3 +584,34 @@ body{ -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
   .dist-row{ grid-template-columns: 110px 1fr auto; }
 }
 
+/* Selector de idioma con la misma estética de los botones */
+.lang-select{
+  appearance: none;
+  background:#fff;
+  color: #1f2937;
+  border:1px solid var(--border, #e5e7eb);
+  border-radius:999px;
+  padding:8px 12px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 1px 0 rgba(0,0,0,.02);
+  transition: background .12s ease, border-color .12s ease, transform .06s ease;
+}
+.lang-select:hover{ border-color:#d1d5db; transform:translateY(-1px); }
+.lang-select:focus-visible{ outline:3px solid rgba(255,90,78,.25); outline-offset:2px; }
+
+/* caret simple para el <select> (opcional) */
+.lang-select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, #9ca3af 50%),
+    linear-gradient(135deg, #9ca3af 50%, transparent 50%),
+    linear-gradient(to right, #fff, #fff);
+  background-position:
+    calc(100% - 18px) calc(50% - 3px),
+    calc(100% - 12px) calc(50% - 3px),
+    calc(100% - 2.2rem) 0.2rem;
+  background-size: 6px 6px, 6px 6px, 1px 70%;
+  background-repeat: no-repeat;
+  padding-right: 2.4rem; /* espacio para el caret */
+}
+
