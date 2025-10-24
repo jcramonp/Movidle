@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, resolve_url
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 from django.db.models import Count
 from django.utils import timezone
+from django.contrib.auth.views import LoginView
+from django.urls import reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import (
     Pelicula,
@@ -29,6 +33,8 @@ from .services.game_service import (
 # --------------------------
 
 
+
+
 def home_view(request):
     """Landing: logo, tagline y botón Play."""
     return render(request, "moviegame/home.html")
@@ -44,6 +50,28 @@ def register_view(request):
     else:
         form = UserCreationForm()
     return render(request, "moviegame/register.html", {"form": form})
+
+# --- Login personalizado: admin -> panel, jugador -> next o fallback ---
+class MovidleLoginView(LoginView):
+    template_name = "moviegame/login.html"
+    redirect_authenticated_user = True  # si ya está logueado, lo redirige
+
+    def get_success_url(self):
+        user = self.request.user
+
+        # Admin siempre al panel
+        if user.is_staff:
+            return reverse_lazy("moviegame:admin_dashboard")
+
+        # Jugador: respetar ?next= si es seguro
+        redirect_to = self.request.POST.get("next") or self.request.GET.get("next")
+        if redirect_to and url_has_allowed_host_and_scheme(
+            redirect_to, allowed_hosts={self.request.get_host()}
+        ):
+            return redirect_to
+
+        # Fallback (tu valor por defecto)
+        return resolve_url(getattr(settings, "LOGIN_REDIRECT_URL", "moviegame:home"))
 
 
 @login_required
@@ -122,6 +150,7 @@ def stats_view(request):
 # --------------------------
 #  PANEL ADMIN (simple)
 # --------------------------
+
 
 
 def _es_staff(u):

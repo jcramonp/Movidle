@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from .views import MovidleLoginView
 
 app_name = "moviegame"
 
@@ -18,9 +19,7 @@ urlpatterns = [
     # Auth
     path(
         "login/",
-        auth_views.LoginView.as_view(
-            template_name="moviegame/login.html", redirect_authenticated_user=True
-        ),
+        MovidleLoginView.as_view(),   # <-- usamos la vista personalizada
         name="login",
     ),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
