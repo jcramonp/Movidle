@@ -9,8 +9,10 @@ from django.views.decorators.http import require_POST
 from django.db.models import Count
 from django.utils import timezone
 from django.contrib.auth.views import LoginView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 
 from .models import (
     Pelicula,
@@ -372,3 +374,86 @@ def api_autocomplete(request):
 
 def howto_view(request):
     return render(request, "moviegame/howto.html")
+
+###################### API PÚBLICA DE PELÍCULAS #########################
+
+from .models import Pelicula
+
+def _coalesce(*vals, default=None):
+    for v in vals:
+        if v not in (None, "", []):
+            return v
+    return default
+
+
+def _genres_to_text(m):
+    try:
+        names = m.lista_generos()
+        return ", ".join(names) if names else ""
+    except Exception:
+        g = getattr(m, "genero", "")
+        return g or ""
+
+def _movie_to_public_dict(m, request):
+    rating = float(m.imdb_rating) if m.imdb_rating is not None else None
+
+    return {
+        "id": m.id,
+        "title": m.titulo,
+        "year": m.anio,
+        "genres": _genres_to_text(m),
+        "runtime_min": int(m.duracion_min or 0),
+        "imdb_rating": rating,
+        "popularity_votes": int(m.imdb_votes or 0),
+        "app_url": request.build_absolute_uri(reverse("moviegame:howto")),
+    }
+
+@require_GET
+def api_public_movies(request):
+
+    q = (request.GET.get("q") or "").strip()
+    try:
+        limit = int(request.GET.get("limit", 20))
+    except ValueError:
+        limit = 20
+    limit = max(1, min(limit, 100))
+
+    qs = Pelicula.objects.all()
+
+    if q:
+        qs = qs.filter(titulo__icontains=q)
+
+    order_fields = []
+    if hasattr(Pelicula, "popularidad_votos"):
+        order_fields.append("-popularidad_votos")
+    if hasattr(Pelicula, "imdb_rating"):
+        order_fields.append("-imdb_rating")
+    order_fields = order_fields or ["-id"]
+
+    qs = qs.order_by(*order_fields)[:limit]
+
+    results = [_movie_to_public_dict(m, request) for m in qs]
+    data = {"provider": "Movidle", "count": len(results), "results": results}
+
+    resp = JsonResponse(data, json_dumps_params={"ensure_ascii": False})
+    resp["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+# --- Página informativa/API Explorer ---------------------------------------
+from django.shortcuts import render
+from django.urls import reverse
+from django.http import HttpRequest
+
+def _abs(request: HttpRequest, path: str) -> str:
+    return request.build_absolute_uri(path)
+
+def api_info(request):
+    endpoints = {
+        "movies": _abs(request, reverse("moviegame:api_public_movies")),
+
+    }
+    ctx = {
+        "endpoints": endpoints,
+        "sample_movies_url": f'{endpoints["movies"]}?limit=12',
+    }
+    return render(request, "moviegame/api_info.html", ctx)

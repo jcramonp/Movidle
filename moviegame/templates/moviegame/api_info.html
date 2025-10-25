@@ -1,0 +1,188 @@
+{% extends "moviegame/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "API pública" %} • Movidle{% endblock %}
+
+{% block head %}
+<style>
+  .api-shell { display: grid; gap: 16px; }
+  .api-card   { background:#fff; border:1px solid #eee; border-radius:16px; padding:16px; }
+  .api-kicker { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#fff; opacity:.9; }
+  .api-url    { background:#f8fafc; border:1px solid #e5e7eb; padding:8px 12px; border-radius:10px; overflow:auto; }
+  .api-actions{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .api-btn    { border-radius:999px; padding:8px 12px; background:#ff5a4e; color:#fff; text-decoration:none; border:0; cursor:pointer; }
+  .api-muted  { color:#64748b; }
+  .api-pre    { background:#0b1020; color:#e6f0ff; border-radius:12px; padding:12px; overflow:auto; }
+  .api-grid   { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+  .api-tile   { background:#fff; border:1px solid #eee; border-radius:14px; padding:12px; }
+  .api-tile h3{ margin:6px 0 6px; color:#ff5a4e; line-height:1.2; font-size:16px; }
+  .api-field  { display:inline-flex; gap:6px; align-items:baseline; font-size:12px; color:#475569; }
+  .api-form   { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .api-input  { flex:1 1 220px; min-width:200px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:999px; outline:none; }
+  .api-input:focus{ border-color:#ff5a4e; box-shadow:0 0 0 3px rgba(255,90,78,.18); }
+  .api-table  { width:100%; border-collapse:separate; border-spacing:0 6px; }
+  .api-table th{ text-align:left; font-size:12px; color:#475569; font-weight:600; }
+  .api-row    { background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; }
+  .api-row td { padding:10px 12px; font-size:14px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card red">
+    <div class="api-kicker">{% trans "Integraciones" %}</div>
+    <h1 style="margin:6px 0 8px 0;">{% trans "API pública" %}</h1>
+  </div>
+
+  <div class="api-shell">
+    <!-- Tarjeta: Endpoint principal -->
+    <section class="api-card">
+      <h2 style="margin:0 0 6px 0;">GET <code>/api/public/movies/</code></h2>
+      <p class="api-muted" style="margin-top:-2px;">
+        {% trans "Listado público de películas con búsqueda y límite." %}
+      </p>
+
+      <div class="api-actions" style="margin:10px 0 12px 0;">
+        <code class="api-url">{{ endpoints.movies }}</code>
+        <button id="copy-movies" class="api-btn">{% trans "Copiar" %}</button>
+      </div>
+
+      <h3 style="margin:12px 0 6px 0;">{% trans "Parámetros" %}</h3>
+      <table class="api-table">
+        <thead>
+          <tr>
+            <th>{% trans "Nombre" %}</th>
+            <th>{% trans "Tipo" %}</th>
+            <th>{% trans "Descripción" %}</th>
+            <th>{% trans "Ejemplo" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="api-row">
+            <td><code>q</code></td>
+            <td>{% trans "string (opcional)" %}</td>
+            <td>{% trans "Texto para buscar por título." %}</td>
+            <td><code>?q=inception</code></td>
+          </tr>
+          <tr class="api-row">
+            <td><code>limit</code></td>
+            <td>{% trans "int (opcional)" %}</td>
+            <td>{% trans "Cantidad máxima a devolver (1–100). Por defecto: 20." %}</td>
+            <td><code>?limit=12</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin:16px 0 8px 0;">{% trans "Ejemplo cURL" %}</h3>
+      <pre class="api-pre">curl "{{ sample_movies_url }}"</pre>
+
+      <details style="margin-top:10px;">
+        <summary style="cursor:pointer;">{% trans "Ejemplo de respuesta (recortado)" %}</summary>
+<pre class="api-pre" style="margin-top:10px;">
+{
+  "provider": "Movidle",
+  "count": 12,
+  "results": [
+    { "id": 603, "title": "The Matrix", "year": 1999, "genres": "Action, Sci-Fi", "runtime_min": 136, "imdb_rating": 8.7, "popularity_votes": 2000000 }
+  ]
+}
+</pre>
+      </details>
+    </section>
+
+    <!-- Tarjeta: Explorer en vivo -->
+    <section class="api-card">
+      <h2 style="margin:0 0 8px 0;">{% trans "Probar el endpoint" %}</h2>
+      <p class="api-muted" style="margin-top:-6px;">{% trans "Consulta tu API y mira los resultados en vivo." %}</p>
+
+      <form class="api-form" id="api-form" onsubmit="return false;" style="margin:6px 0 10px 0;">
+        <input id="q" class="api-input" placeholder="{% trans 'Buscar por título (opcional)' %}">
+        <input id="limit" class="api-input" type="number" min="1" max="100" value="12" aria-label="limit">
+        <button id="try-btn" class="api-btn">{% trans "Probar" %}</button>
+      </form>
+
+      <div id="live-url" class="api-url" style="margin-bottom:10px;"></div>
+
+      <div id="preview" class="api-grid"></div>
+      <p id="preview-empty" class="api-muted" style="display:none; margin-top:8px;">{% trans "No hay elementos para mostrar." %}</p>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Copiar URL base
+  const copyBtn = document.getElementById('copy-movies');
+  copyBtn?.addEventListener('click', async ()=>{
+    try {
+      await navigator.clipboard.writeText("{{ endpoints.movies }}");
+      copyBtn.textContent = "{{ _('Copiado') }}";
+      setTimeout(()=> copyBtn.textContent = "{{ _('Copiar') }}", 1200);
+    } catch(e) {}
+  });
+
+  const base = "{{ endpoints.movies|escapejs }}";
+  const liveUrl = document.getElementById('live-url');
+  const grid = document.getElementById('preview');
+  const empty = document.getElementById('preview-empty');
+  const q = document.getElementById('q');
+  const limit = document.getElementById('limit');
+  const tryBtn = document.getElementById('try-btn');
+
+  function buildUrl() {
+    const params = new URLSearchParams();
+    const qv = (q.value || '').trim();
+    const lv = (limit.value || '12').trim();
+    if (qv) params.set('q', qv);
+    if (lv) params.set('limit', lv);
+    return base + (params.toString() ? ('?' + params.toString()) : '');
+  }
+
+  function renderUrl() {
+    liveUrl.textContent = buildUrl();
+  }
+
+  async function run() {
+    renderUrl();
+    grid.innerHTML = '';
+    empty.style.display = 'none';
+    tryBtn.disabled = true;
+
+    try {
+      const r = await fetch(buildUrl());
+      const data = await r.json();
+      const items = (data && data.results) || [];
+      if (!items.length) { empty.style.display = 'block'; return; }
+
+      items.forEach(it=>{
+        const card = document.createElement('article');
+        card.className = 'api-tile';
+        card.innerHTML = `
+          <h3>${it.title || ''}</h3>
+          <p class="api-muted" style="margin:0 0 8px;">${it.year || ''}${it.genres ? ' • '+it.genres : ''}</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            ${it.imdb_rating != null ? `<span class="api-field">IMDb: <b>${it.imdb_rating}</b></span>` : ''}
+            ${it.runtime_min ? `<span class="api-field">{% trans "Duración" %}: <b>${it.runtime_min} {% trans "min" %}</b></span>` : ''}
+            ${it.popularity_votes ? `<span class="api-field">{% trans "Votos" %}: <b>${it.popularity_votes}</b></span>` : ''}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    } catch(e) {
+      empty.style.display = 'block';
+    } finally {
+      tryBtn.disabled = false;
+    }
+  }
+
+  // Eventos
+  q.addEventListener('input', renderUrl);
+  limit.addEventListener('input', renderUrl);
+  tryBtn.addEventListener('click', run);
+
+  // Estado inicial
+  renderUrl();
+  run();
+})();
+</script>
+{% endblock %}

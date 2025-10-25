@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
-from .views import MovidleLoginView
+from .views import MovidleLoginView, api_info
 
 app_name = "moviegame"
 
@@ -29,4 +29,7 @@ urlpatterns = [
         auth_views.LogoutView.as_view(next_page="moviegame:login"),
         name="logout",
     ),
+    path("api/public/movies/", views.api_public_movies, name="api_public_movies"),
+    path("api-info/", api_info, name="api_info"),
+
 ]

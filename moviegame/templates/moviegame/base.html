@@ -36,30 +36,40 @@
       </form>
     </nav>
   {% else %}
-    <!-- Navbar normal del sitio -->
+   {# Navbar normal del sitio #}
     <a class="brand-btn" href="{% url 'moviegame:home' %}">movidle</a>
+
     <nav class="nav">
-        {% if user.is_staff %}
-            <!-- Solo admins -->
-            <a class="btn" href="{% url 'moviegame:admin_dashboard' %}">{% trans "Panel" %}</a>
-            <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
-                {% csrf_token %}<button type="submit" class="btn">Salir</button>
-            </form>
-        {% else %}
-            <!-- Jugadores -->
-            {% if user.is_authenticated %}
-                <a class="btn" href="{% url 'moviegame:stats' %}">{% trans "Estadisticas" %}</a>
-            {% endif %}
-            <a class="btn" href="{% url 'moviegame:howto' %}">{% trans "Cómo jugar" %}</a>
-            {% if user.is_authenticated %}
-                <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
-                    {% csrf_token %}<button type="submit" class="btn">{% trans "Salir" %}</button>
-                </form>
-            {% else %}
-                <a class="btn" href="{% url 'moviegame:login' %}">{% trans "Entrar" %}</a>
-                <a class="btn" href="{% url 'moviegame:register' %}">{% trans "Registro" %}</a>
-            {% endif %}
+      {% if user.is_staff %}
+        {# --- Solo admins --- #}
+        <a class="btn" href="{% url 'moviegame:admin_dashboard' %}">{% trans "Panel" %}</a>
+        <a class="btn" href="{% url 'moviegame:api_info' %}">{% trans "API" %}</a>
+        <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn">{% trans "Salir" %}</button>
+        </form>
+
+      {% else %}
+        {# --- Jugadores --- #}
+        {% if user.is_authenticated %}
+          <a class="btn" href="{% url 'moviegame:stats' %}">{% trans "Estadísticas" %}</a>
         {% endif %}
+
+        <a class="btn" href="{% url 'moviegame:howto' %}">{% trans "Cómo jugar" %}</a>
+        <a class="btn" href="{% url 'moviegame:api_info' %}">{% trans "API" %}</a>
+
+        {% if user.is_authenticated %}
+          <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="btn">{% trans "Salir" %}</button>
+          </form>
+        {% else %}
+          <a class="btn" href="{% url 'moviegame:login' %}">{% trans "Entrar" %}</a>
+          <a class="btn" href="{% url 'moviegame:register' %}">{% trans "Registro" %}</a>
+        {% endif %}
+      {% endif %}
+    </nav>
+
 
         <!-- Selector de idioma dentro del nav (alineado a los demás) -->
         <form action="{% url 'set_language' %}" method="post" style="display:inline-flex; gap:6px; align-items:center;">
