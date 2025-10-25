@@ -10,85 +10,65 @@
   {% block head %}{% endblock %}
 </head>
 <body class="bg">
-  <header class="header">
+  <header class="site-header">
   {% if navbar_mode == 'admin' %}
     <!-- Navbar reducida para el panel -->
-    <a class="brand-btn" href="{% url 'moviegame:admin_dashboard' %}">panel</a>
-    <nav class="nav">
-      <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
-        {% csrf_token %}<button type="submit" class="btn">Salir</button>
-      </form>
-
-      <!-- Selector de idioma dentro del nav (alineado a los demás) -->
-      <form action="{% url 'set_language' %}" method="post" style="display:inline-flex; gap:6px; align-items:center;">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-        {% get_current_language as LANGUAGE_CODE %}
-        {% get_available_languages as LANGUAGES %}
-        {% get_language_info_list for LANGUAGES as languages %}
-        <select name="language" onchange="this.form.submit()" class="btn" style="padding:6px 10px; border-radius:999px;">
-          {% for lang in languages %}
-            <option value="{{ lang.code }}" {% if lang.code == LANGUAGE_CODE %}selected{% endif %}>
-              {{ lang.name_local|capfirst }}
-            </option>
-          {% endfor %}
-        </select>
-      </form>
-    </nav>
-  {% else %}
-   {# Navbar normal del sitio #}
-    <a class="brand-btn" href="{% url 'moviegame:home' %}">movidle</a>
-
-    <nav class="nav">
-      {% if user.is_staff %}
-        {# --- Solo admins --- #}
-        <a class="btn" href="{% url 'moviegame:admin_dashboard' %}">{% trans "Panel" %}</a>
-        <a class="btn" href="{% url 'moviegame:api_info' %}">{% trans "API" %}</a>
-        <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
-          {% csrf_token %}
-          <button type="submit" class="btn">{% trans "Salir" %}</button>
-        </form>
-
-      {% else %}
-        {# --- Jugadores --- #}
-        {% if user.is_authenticated %}
-          <a class="btn" href="{% url 'moviegame:stats' %}">{% trans "Estadísticas" %}</a>
-        {% endif %}
-
-        <a class="btn" href="{% url 'moviegame:howto' %}">{% trans "Cómo jugar" %}</a>
-        <a class="btn" href="{% url 'moviegame:api_info' %}">{% trans "API" %}</a>
-
-        {% if user.is_authenticated %}
-          <form action="{% url 'moviegame:logout' %}" method="post" style="display:inline">
-            {% csrf_token %}
-            <button type="submit" class="btn">{% trans "Salir" %}</button>
+    <div class="nav-shell">
+      <a class="brand-left" href="{% url 'moviegame:admin_dashboard' %}">movidle</a>
+      <nav class="nav-center">
+        <div class="nav-pill">
+          <a class="nav-link" href="{% url 'moviegame:admin_dashboard' %}">{% trans "Panel" %}</a>
+          <form action="{% url 'moviegame:logout' %}" method="post">
+            {% csrf_token %}<button class="nav-link as-link" type="submit">{% trans "Salir" %}</button>
           </form>
-        {% else %}
-          <a class="btn" href="{% url 'moviegame:login' %}">{% trans "Entrar" %}</a>
-          <a class="btn" href="{% url 'moviegame:register' %}">{% trans "Registro" %}</a>
-        {% endif %}
-      {% endif %}
-    </nav>
-
-
-        <!-- Selector de idioma dentro del nav (alineado a los demás) -->
-        <form action="{% url 'set_language' %}" method="post" style="display:inline-flex; gap:6px; align-items:center;">
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        </div>
+      </nav>
+      <div class="lang-right">
+        <form action="{% url 'set_language' %}" method="post">
+          {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
           {% get_current_language as LANGUAGE_CODE %}
-          {% get_available_languages as LANGUAGES %}
-          {% get_language_info_list for LANGUAGES as languages %}
-          <select name="language" onchange="this.form.submit()" class="btn" style="padding:6px 10px; border-radius:999px;">
-            {% for lang in languages %}
-              <option value="{{ lang.code }}" {% if lang.code == LANGUAGE_CODE %}selected{% endif %}>
-                {{ lang.name_local|capfirst }}
-              </option>
-            {% endfor %}
-          </select>
+          <button name="language" value="es" class="lang-link {% if LANGUAGE_CODE|slice:":2" == 'es' %}is-active{% endif %}">ES</button>
+          <span class="lang-sep">|</span>
+          <button name="language" value="en" class="lang-link {% if LANGUAGE_CODE|slice:":2" == 'en' %}is-active{% endif %}">EN</button>
         </form>
-    </nav>
+      </div>
+    </div>
+  {% else %}
+    <!-- Navbar pública -->
+    <div class="nav-shell">
+      <a class="brand-left" href="{% url 'moviegame:home' %}">movidle</a>
+
+      <nav class="nav-center" role="navigation" aria-label="Primary">
+        <div class="nav-pill">
+          <a class="nav-link" href="{% url 'moviegame:howto' %}">{% trans "Cómo jugar" %}</a>
+          <a class="nav-link" href="{% url 'moviegame:api_info' %}">API</a>
+
+          {% if user.is_authenticated %}
+            <a class="nav-link" href="{% url 'moviegame:stats' %}">{% trans "Estadísticas" %}</a>
+            <form action="{% url 'moviegame:logout' %}" method="post">
+              {% csrf_token %}<button class="nav-link as-link" type="submit">{% trans "Salir" %}</button>
+            </form>
+          {% else %}
+            <a class="nav-link" href="{% url 'moviegame:login' %}">{% trans "Entrar" %}</a>
+            <a class="nav-link" href="{% url 'moviegame:register' %}">{% trans "Registro" %}</a>
+          {% endif %}
+        </div>
+      </nav>
+
+      <!-- Idiomas a la derecha: ES | EN -->
+      <div class="lang-right">
+        <form action="{% url 'set_language' %}" method="post">
+          {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+          {% get_current_language as LANGUAGE_CODE %}
+          <button name="language" value="es" class="lang-link {% if LANGUAGE_CODE|slice:":2" == 'es' %}is-active{% endif %}">ES</button>
+          <span class="lang-sep">|</span>
+          <button name="language" value="en" class="lang-link {% if LANGUAGE_CODE|slice:":2" == 'en' %}is-active{% endif %}">EN</button>
+        </form>
+      </div>
+    </div>
   {% endif %}
 </header>
+
 
   <main class="container">
     {% block content %}{% endblock %}

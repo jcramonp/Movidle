@@ -1,15 +1,309 @@
 {% extends "moviegame/base.html" %}
 {% load i18n %}
 {% load static %}
+
 {% block title %}Movidle{% endblock %}
+
 {% block content %}
-  <section class="hero">
-    <img class="hero-logo" src="{% static 'moviegame/img/logo.png' %}" alt="Movidle">
-    <p class="hero-tag">{% trans "10 intentos, 500 películas" %}<br/>{% trans "¿Ganarás hoy?" %}</p>
-      {% if user.is_staff %}
-          <a class="btn red big" href="{% url 'moviegame:admin_dashboard' %}">{% trans "Pánel" %}</a>
-      {% else %}
-          <a class="btn red big" href="{% url 'moviegame:game' %}">{% trans "Jugar" %}</a>
-      {% endif %}
-  </section>
+<!-- ====== HERO full viewport con layout 2 columnas ====== -->
+<section class="hero home-hero full-bleed" aria-label="{% trans 'Movidle – Adivina la película del día' %}">
+  <div class="cursor-blob" aria-hidden="true"></div>
+
+  <div class="hero-grid">
+    <!-- LADO IZQUIERDO: tarjeta 3D del logo -->
+    <div class="hero-visual">
+      <div class="logo-card" data-tilt>
+        <div class="logo-card__glow"></div>
+        <div class="logo-card__inner">
+          <img src="{% static 'moviegame/img/logo.png' %}" alt="Logo Movidle" width="300" height="300">
+        </div>
+      </div>
+    </div>
+
+    <!-- LADO DERECHO: copy con texto animado -->
+    <header class="hero-copy">
+      <h1 class="fx-split" data-fx="rise">
+        {% trans "m o v i d l e" %}
+      </h1>
+      <p class="fx-split sub" data-fx="fade">
+        {% trans "Adivina la película del día" %}
+      </p>
+      <div class="hero-ctas right">
+        <a class="btn big" href="{% url 'moviegame:game' %}">{% trans "Jugar ahora" %}</a>
+      </div>
+    </header>
+
+  </div>
+
+  <div class="scroll-indicator" aria-hidden="true">
+    <span>{% trans "Scroll down" %}</span>
+    <div class="mouse"></div>
+  </div>
+</section>
+
+<!-- ====== INTRO TÍTULO (aparece al hacer scroll) ====== -->
+<section class="section-intro reveal-title full-bleed" aria-hidden="true">
+  <div class="intro-wrap">
+    <h2>¿Las conoces?</h2>
+  </div>
+</section>
+
+
+
+<!-- ====== POSTERS FAMOSOS – scroll horizontal a pantalla completa ====== -->
+<section class="famous-posters hscroll full-bleed" aria-label="{% trans 'Posters famosos' %}">
+  <div class="hscroll-sticky">
+    <div class="hscroll-track">
+      {% for m in famous_movies %}
+      <article class="poster-fx reveal" data-tilt>
+        <div class="img-wrap">
+          <img
+            src="{{ m.poster_url }}"
+            alt="Poster {{ m.title }}"
+            loading="lazy"
+            width="360" height="540">
+        </div>
+        <h3 class="poster-caption">{{ m.title }} <span>({{ m.year }})</span></h3>
+      </article>
+      {% empty %}
+        {% for i in "123456"|make_list %}
+        <article class="poster-fx reveal skeleton">
+          <div class="img-wrap"></div>
+          <h3 class="poster-caption">&nbsp;</h3>
+        </article>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ====== FINAL ROJO CON CTA ====== -->
+<section class="final-cta full-bleed" aria-labelledby="final-cta-title">
+  <div class="final-wrap">
+    <h2 id="final-cta-title">¿Qué esperas para jugar?</h2>
+    <a class="btn huge light" href="{% url 'moviegame:game' %}">Jugar ahora</a>
+  </div>
+</section>
+
+
+  <!-- ====== JS efectos ====== -->
+  <script>
+    (function(){
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ===== Cursor blob =====
+      const blob = document.querySelector('.cursor-blob');
+      if(blob && !prefersReduced){
+        let x = innerWidth/2, y = innerHeight/2, tx = x, ty = y;
+        const speed=.12;
+        const loop=()=>{ x += (tx-x)*speed; y += (ty-y)*speed; blob.style.transform=`translate3d(${x}px,${y}px,0)`; requestAnimationFrame(loop); };
+        addEventListener('mousemove', e=>{ tx = e.clientX; ty = e.clientY; }, {passive:true});
+        loop();
+      } else if(blob){ blob.style.opacity=.35; }
+
+      // ===== Split text en spans preservando espacios =====
+      function splitAndAnimate(el){
+        const text = el.textContent;          // no trim: preserva espacios internos
+        el.setAttribute('aria-label', text);
+        el.textContent = '';
+        const frag = document.createDocumentFragment();
+        for (let i=0; i<text.length; i++){
+          const ch = text[i];
+          const s = document.createElement('span');
+          s.className = 'fx-char';
+          s.style.setProperty('--i', i);
+          s.textContent = (ch === ' ') ? '\u00A0' : ch; // <-- espacio no rompible
+          frag.appendChild(s);
+        }
+        el.appendChild(frag);
+        el.classList.add('in');
+      }
+      document.querySelectorAll('.fx-split').forEach(splitAndAnimate);
+
+      // ===== Tilt/parallax para la tarjeta 3D del logo =====
+      const card = document.querySelector('.logo-card[data-tilt]');
+      if(card){
+        const MAX = 12; // grados
+        function move(e){
+          const r = card.getBoundingClientRect();
+          const px = (e.clientX - r.left)/r.width - .5;
+          const py = (e.clientY - r.top)/r.height - .5;
+          card.style.transform = `rotateX(${(-py*MAX).toFixed(2)}deg) rotateY(${(px*MAX).toFixed(2)}deg) translateZ(0)`;
+        }
+        function leave(){ card.style.transform=''; }
+        card.addEventListener('mousemove', move);
+        card.addEventListener('mouseleave', leave);
+      }
+    })();
+  </script>
+
+    <script>
+    (function(){
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      /* === REVEAL al hacer scroll (posters) === */
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(ent=>{
+          if(ent.isIntersecting){ ent.target.classList.add('in'); io.unobserve(ent.target); }
+        });
+      }, {threshold:.15});
+      document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+      /* === Tilt/parallax para todos los elementos con data-tilt (incluye posters) === */
+      const tiltEls = document.querySelectorAll('[data-tilt]');
+      tiltEls.forEach(el=>{
+        const MAX = 10; // grados
+        function move(e){
+          const r = el.getBoundingClientRect();
+          const px = (e.clientX - r.left)/r.width - .5;
+          const py = (e.clientY - r.top)/r.height - .5;
+          el.style.transform = `rotateX(${(-py*MAX).toFixed(2)}deg) rotateY(${(px*MAX).toFixed(2)}deg) translate(${px*6}px, ${py*6}px)`;
+        }
+        function leave(){ el.style.transform=''; }
+        el.addEventListener('mousemove', move);
+        el.addEventListener('mouseleave', leave);
+      });
+    })();
+    </script>
+    <script>
+(function(){
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sec = document.querySelector('.famous-posters.hscroll');
+  if(!sec || prefersReduced) return;
+
+  const sticky = sec.querySelector('.hscroll-sticky');
+  const track  = sec.querySelector('.hscroll-track');
+
+  function clamp(n, min, max){ return Math.max(min, Math.min(n, max)); }
+
+  // 1) Calcular la altura necesaria del section para que el horizontal tenga “recorrido”
+  function setHeights(){
+    const trackWidth = track.scrollWidth;           // ancho real de todos los pósters
+    const viewportW  = window.innerWidth;
+    const extraScroll = Math.max(0, trackWidth - viewportW); // cuánto necesitamos “desplazar”
+    const totalHeight = window.innerHeight + extraScroll;    // sticky + recorrido
+    sec.style.setProperty('--hscroll-height', totalHeight + 'px');
+  }
+  setHeights();
+  addEventListener('resize', setHeights);
+
+  // 2) Vincular el scroll vertical a la transformación X del track
+  function onScroll(){
+    const start = sec.offsetTop;
+    const end   = start + sec.offsetHeight - window.innerHeight; // cuando termina el sticky
+    const y     = window.scrollY;
+    const pct   = clamp((y - start) / (end - start), 0, 1);
+
+    const maxX  = track.scrollWidth - window.innerWidth;
+    track.style.transform = `translate3d(${-pct * maxX}px, 0, 0)`;
+  }
+  onScroll();
+  addEventListener('scroll', onScroll, {passive:true});
+
+  // 3) “Reveal” por intersección (cuando la card entra en viewport horizontal)
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(ent=>{
+      if(ent.isIntersecting){ ent.target.classList.add('in'); io.unobserve(ent.target); }
+    });
+  }, { root: sticky, threshold: .25 }); // ojo: root = sticky para observar dentro
+
+  track.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // 4) Tilt en hover para cada card
+  track.querySelectorAll('[data-tilt]').forEach(el=>{
+    const MAX = 10;
+    function move(e){
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left)/r.width - .5;
+      const py = (e.clientY - r.top)/r.height - .5;
+      el.style.transform = `rotateX(${(-py*MAX).toFixed(2)}deg) rotateY(${(px*MAX).toFixed(2)}deg) translate(${px*8}px, ${py*8}px)`;
+    }
+    function leave(){ el.style.transform=''; }
+    el.addEventListener('mousemove', move);
+    el.addEventListener('mouseleave', leave);
+  });
+})();
+</script>
+
+    <script>
+(function(){
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sec = document.querySelector('.famous-posters.hscroll');
+  if(!sec || prefersReduced) return;
+
+  const sticky = sec.querySelector('.hscroll-sticky');
+  const track  = sec.querySelector('.hscroll-track');
+
+  const clamp = (n,min,max)=> Math.max(min, Math.min(n,max));
+
+  // Altura total = viewport + recorrido horizontal completo (anchoTrack - anchoViewport) + gutters
+  function setHeights(){
+    // Forzamos un layout para tener medidas correctas
+    const trackWidth = track.scrollWidth;
+    const viewportW  = window.innerWidth;
+    const extraScroll = Math.max(0, trackWidth - viewportW);
+    const totalHeight = window.innerHeight + extraScroll;
+    sec.style.setProperty('--hscroll-height', totalHeight + 'px');
+  }
+  setHeights();
+  addEventListener('resize', setHeights);
+
+  function onScroll(){
+    const start = sec.offsetTop;
+    const end   = start + sec.offsetHeight - window.innerHeight;
+    const y     = window.scrollY;
+    const pct   = clamp((y - start) / (end - start || 1), 0, 1);
+
+    const maxX  = track.scrollWidth - window.innerWidth;
+    track.style.transform = `translate3d(${-pct * maxX}px, 0, 0)`;
+  }
+  onScroll();
+  addEventListener('scroll', onScroll, {passive:true});
+
+  // Reveal dentro del sticky viewport
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(ent=>{
+      if(ent.isIntersecting){ ent.target.classList.add('in'); io.unobserve(ent.target); }
+    });
+  }, { root: sticky, threshold: .25 });
+
+  track.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // Tilt hover
+  track.querySelectorAll('[data-tilt]').forEach(el=>{
+    const MAX = 10;
+    function move(e){
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left)/r.width - .5;
+      const py = (e.clientY - r.top)/r.height - .5;
+      el.style.transform = `rotateX(${(-py*MAX).toFixed(2)}deg) rotateY(${(px*MAX).toFixed(2)}deg) translate(${px*10}px, ${py*10}px)`;
+    }
+    function leave(){ el.style.transform=''; }
+    el.addEventListener('mousemove', move);
+    el.addEventListener('mouseleave', leave);
+  });
+})();
+</script>
+
+    <script>
+        (function(){
+          // Reveal del título “¿Las conoces?” al entrar en viewport
+          const intro = document.querySelector('.section-intro');
+          if(intro){
+            const ioTitle = new IntersectionObserver((entries)=>{
+              entries.forEach(ent=>{
+                if(ent.isIntersecting){ intro.classList.add('in'); ioTitle.disconnect(); }
+              });
+            }, {threshold: .25});
+            ioTitle.observe(intro);
+          }
+        })();
+    </script>
+
+
+
+
+
 {% endblock %}

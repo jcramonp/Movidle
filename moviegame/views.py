@@ -13,6 +13,8 @@ from django.urls import reverse_lazy, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
+from django.db.models import Q
+
 
 from .models import (
     Pelicula,
@@ -38,8 +40,41 @@ from .services.game_service import (
 
 
 def home_view(request):
-    """Landing: logo, tagline y botón Play."""
-    return render(request, "moviegame/home.html")
+    """
+    Landing: mensaje + posters famosos + CTA.
+    Enviamos 'famous_movies' con lo más conocido (votos/rating) y con poster.
+    """
+    # Ajusta el límite como prefieras (entre 6–18 luce bien con el layout)
+    limit = 12
+
+    famous_qs = (
+        Pelicula.objects
+        .filter(
+            ~Q(poster_url__isnull=True),
+            ~Q(poster_url__exact=""),
+            imdb_votes__isnull=False,
+        )
+        .order_by("-imdb_votes", "-imdb_rating")[:limit]
+        .only("id", "titulo", "anio", "poster_url", "imdb_votes", "imdb_rating")
+    )
+
+    # Normalizamos a un dict simple que el template consume directo
+    famous_movies = [
+        {
+            "title": m.titulo,
+            "year": m.anio,
+            "poster_url": m.poster_url,
+        }
+        for m in famous_qs
+    ]
+
+    return render(
+        request,
+        "moviegame/home.html",
+        {
+            "famous_movies": famous_movies,
+        },
+    )
 
 
 def register_view(request):
