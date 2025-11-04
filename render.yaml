@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: django-web
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn project.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "django-web.onrender.com"   # cámbialo tras crear el servicio (o deja .onrender.com)
+      - key: PYTHON_VERSION
+        value: "3.12.6"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: django-db
+          property: connectionString
+    postDeployCommand: "python manage.py migrate"
+
+databases:
+  - name: django-db
+    plan: free
