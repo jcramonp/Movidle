@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-25 12:46-0500\n"
+"POT-Creation-Date: 2025-11-05 01:30-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -44,7 +44,7 @@ msgstr "Public API"
 
 #: .\moviegame\templates\moviegame\api_info.html:33
 msgid "Integraciones"
-msgstr ""
+msgstr "Integrations"
 
 #: .\moviegame\templates\moviegame\api_info.html:42
 msgid "Listado público de películas con búsqueda y límite."
@@ -115,7 +115,6 @@ msgstr "Search by title (optional)"
 msgid "Probar"
 msgstr "Try"
 
-
 #: .\moviegame\templates\moviegame\api_info.html:107
 msgid "No hay elementos para mostrar."
 msgstr "No items to display."
@@ -144,38 +143,32 @@ msgstr "Votes"
 # msgid "La película de hoy es..."
 # msgstr "Today's movie is..."
 # ##################################################################
-#: .\moviegame\templates\moviegame\base.html:45
+#: .\moviegame\templates\moviegame\base.html:20
 msgid "Panel"
 msgstr "Admin"
 
-# #######################################################
-#: .\moviegame\templates\moviegame\base.html:46
-#: .\moviegame\templates\moviegame\base.html:59
-msgid "API"
-msgstr "API"
-
+#: .\moviegame\templates\moviegame\base.html:22
 #: .\moviegame\templates\moviegame\base.html:49
-#: .\moviegame\templates\moviegame\base.html:64
 msgid "Salir"
 msgstr "Log out"
 
-#: .\moviegame\templates\moviegame\base.html:55
-#, fuzzy
-#| msgid "Estadisticas"
-msgid "Estadísticas"
-msgstr "Stats"
-
-#: .\moviegame\templates\moviegame\base.html:58
+#: .\moviegame\templates\moviegame\base.html:43
 #: .\moviegame\templates\moviegame\howto.html:92
 #: .\moviegame\templates\moviegame\howto.html:96
 msgid "Cómo jugar"
 msgstr "How to play"
 
-#: .\moviegame\templates\moviegame\base.html:67
+#: .\moviegame\templates\moviegame\base.html:47
+#, fuzzy
+#| msgid "Estadisticas"
+msgid "Estadísticas"
+msgstr "Stats"
+
+#: .\moviegame\templates\moviegame\base.html:52
 msgid "Entrar"
 msgstr "Log me in"
 
-#: .\moviegame\templates\moviegame\base.html:68
+#: .\moviegame\templates\moviegame\base.html:53
 msgid "Registro"
 msgstr "Sign up"
 
@@ -192,21 +185,43 @@ msgstr "Type a guess here…"
 msgid "La película de hoy es..."
 msgstr "Today's movie is..."
 
-#: .\moviegame\templates\moviegame\home.html:8
-msgid "10 intentos, 500 películas"
-msgstr "10 guesses, 500 movies"
+#: .\moviegame\templates\moviegame\home.html:9
+msgid "Movidle – Adivina la película del día"
+msgstr "Movidle - Guess the movie of the day"
 
-#: .\moviegame\templates\moviegame\home.html:8
-msgid "¿Ganarás hoy?"
-msgstr "Will you win today?"
+#: .\moviegame\templates\moviegame\home.html:26
+msgid "m o v i d l e"
+msgstr ""
 
-#: .\moviegame\templates\moviegame\home.html:10
-msgid "Pánel"
-msgstr "Admin"
+# #################################################
+#: .\moviegame\templates\moviegame\home.html:28
+#, fuzzy
+#| msgid "Película del día"
+msgid "Adivina la película del día"
+msgstr "Movie of the day"
 
-#: .\moviegame\templates\moviegame\home.html:12
-msgid "Jugar"
-msgstr "Play"
+#: .\moviegame\templates\moviegame\home.html:30
+#: .\moviegame\templates\moviegame\home.html:85
+#, fuzzy
+#| msgid "Jugar"
+msgid "Jugar ahora"
+msgstr "Play now"
+
+#: .\moviegame\templates\moviegame\home.html:38
+msgid "Desliza hacia abajo"
+msgstr "Scroll down"
+
+#: .\moviegame\templates\moviegame\home.html:46
+msgid "Las conoces?"
+msgstr "Do you know them?"
+
+#: .\moviegame\templates\moviegame\home.html:53
+msgid "Posters famosos"
+msgstr "famous posters"
+
+#: .\moviegame\templates\moviegame\home.html:84
+msgid "¿Qué esperas para jugar?"
+msgstr "What are you waiting for to play?"
 
 #: .\moviegame\templates\moviegame\howto.html:93
 msgid ""
@@ -1675,6 +1690,19 @@ msgstr ""
 #: .\venv\Lib\site-packages\django\views\templates\default_urlconf.html:248
 msgid "Connect, get help, or contribute"
 msgstr ""
+
+# #######################################################
+#~ msgid "API"
+#~ msgstr "API"
+
+#~ msgid "10 intentos, 500 películas"
+#~ msgstr "10 guesses, 500 movies"
+
+#~ msgid "¿Ganarás hoy?"
+#~ msgstr "Will you win today?"
+
+#~ msgid "Pánel"
+#~ msgstr "Admin"
 
 #~ msgid ""
 #~ "Comparte estos endpoints con equipos aliados para que consuman tu "

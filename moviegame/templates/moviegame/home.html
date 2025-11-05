@@ -25,18 +25,17 @@
       <h1 class="fx-split" data-fx="rise">
         {% trans "m o v i d l e" %}
       </h1>
-      <p class="fx-split sub" data-fx="fade">
-        {% trans "Adivina la película del día" %}
-      </p>
+      <p class="fx-split sub" data-fx="fade">{% trans "Adivina la película del día" %}</p>
       <div class="hero-ctas right">
-        <a class="btn big" href="{% url 'moviegame:game' %}">{% trans "Jugar ahora" %}</a>
+        <a class="btn huge light" href="{% url 'moviegame:game' %}">{% trans "Jugar ahora" %}</a>
+
       </div>
     </header>
 
   </div>
 
   <div class="scroll-indicator" aria-hidden="true">
-    <span>{% trans "Scroll down" %}</span>
+    <span>{% trans "Desliza hacia abajo" %}</span>
     <div class="mouse"></div>
   </div>
 </section>
@@ -44,7 +43,7 @@
 <!-- ====== INTRO TÍTULO (aparece al hacer scroll) ====== -->
 <section class="section-intro reveal-title full-bleed" aria-hidden="true">
   <div class="intro-wrap">
-    <h2>¿Las conoces?</h2>
+    <h2>{% trans "Las conoces?" %}</h2>
   </div>
 </section>
 
@@ -82,8 +81,9 @@
 <!-- ====== FINAL ROJO CON CTA ====== -->
 <section class="final-cta full-bleed" aria-labelledby="final-cta-title">
   <div class="final-wrap">
-    <h2 id="final-cta-title">¿Qué esperas para jugar?</h2>
-    <a class="btn huge light" href="{% url 'moviegame:game' %}">Jugar ahora</a>
+    <h2 id="final-cta-title">{% trans "¿Qué esperas para jugar?" %}</h2>
+    <a class="btn huge light" href="{% url 'moviegame:game' %}">{% trans "Jugar ahora" %}</a>
+
   </div>
 </section>
 
