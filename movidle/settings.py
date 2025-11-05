@@ -93,7 +93,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # --- i18n ---
 LANGUAGE_CODE = "es"
 USE_I18N = True
-LANGUAGES = [("es", "Español"), ("en", "English")]
+LANGUAGES = [("es", "Español"), ("en", "English"), ("de", "German")]
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
 # --- Static/Media ---
