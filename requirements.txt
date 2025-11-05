@@ -6,3 +6,4 @@ psycopg2-binary
 python-dotenv
 dj-database-url
 whitenoise
+reportlab==4.2.2

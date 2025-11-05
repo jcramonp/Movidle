@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
-from .views import MovidleLoginView, api_info
+from .views import MovidleLoginView, api_info, export_peliculas
 
 app_name = "moviegame"
 
@@ -31,5 +31,9 @@ urlpatterns = [
     ),
     path("api/public/movies/", views.api_public_movies, name="api_public_movies"),
     path("api-info/", api_info, name="api_info"),
+    path("productos-aliados/", views.productos_aliados, name="productos_aliados"),
+    path("export/peliculas/", export_peliculas, name="export_peliculas"),
+
+
 
 ]

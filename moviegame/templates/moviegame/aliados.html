@@ -1,0 +1,35 @@
+{% extends "moviegame/base.html" %}
+{% load i18n humanize %}
+{% block content %}
+<section class="container" style="max-width: 1100px; margin: 2rem auto;">
+  <header style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+    <h1 style="margin:0;">{% trans "Productos de Aliados" %}</h1>
+
+    <form method="get" action="" style="display:flex; gap:.5rem; align-items:center;">
+      <label>
+        <input type="checkbox" name="featured" value="true" {% if featured %}checked{% endif %} onchange="this.form.submit()">
+        {% trans "Solo destacados" %}
+      </label>
+      <noscript><button type="submit">{% trans "Aplicar" %}</button></noscript>
+    </form>
+  </header>
+
+  {% if products %}
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem; margin-top:1rem;">
+      {% for p in products %}
+        <article style="border:1px solid #eee; border-radius:12px; padding:1rem;">
+          <h3 style="margin:.25rem 0 0 0;">{{ p.name }}</h3>
+          <p style="margin:.25rem 0 1rem 0; font-weight:600;">
+            $ {{ p.price|floatformat:0|intcomma }} COP
+          </p>
+          <a href="{{ p.detail_absolute }}" target="_blank" rel="noopener" style="text-decoration:none;">
+            {% trans "Ver detalle →" %}
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p style="margin-top:1rem;">{% trans "No hay productos disponibles en este momento." %}</p>
+  {% endif %}
+</section>
+{% endblock %}

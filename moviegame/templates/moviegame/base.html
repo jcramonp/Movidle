@@ -42,6 +42,7 @@
         <div class="nav-pill">
           <a class="nav-link" href="{% url 'moviegame:howto' %}">{% trans "Cómo jugar" %}</a>
           <a class="nav-link" href="{% url 'moviegame:api_info' %}">API</a>
+          <a class="nav-link" href="{% url 'moviegame:productos_aliados' %}">{% trans "Aliados" %}</a>
 
           {% if user.is_authenticated %}
             <a class="nav-link" href="{% url 'moviegame:stats' %}">{% trans "Estadísticas" %}</a>
@@ -55,7 +56,7 @@
         </div>
       </nav>
 
-      <!-- Idiomas a la derecha: ES | EN -->
+      <!-- Idiomas a la derecha-->
       <div class="lang-right">
         <form action="{% url 'set_language' %}" method="post">
           {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -63,6 +64,9 @@
           <button name="language" value="es" class="lang-link {% if LANGUAGE_CODE|slice:":2" == 'es' %}is-active{% endif %}">ES</button>
           <span class="lang-sep">|</span>
           <button name="language" value="en" class="lang-link {% if LANGUAGE_CODE|slice:":2" == 'en' %}is-active{% endif %}">EN</button>
+          <span class="lang-sep">|</span>
+          <button name="language" value="de" class="lang-link {% if LANGUAGE_CODE|slice:":2" == 'de' %}is-active{% endif %}">DE</button>
+        </form>
         </form>
       </div>
     </div>

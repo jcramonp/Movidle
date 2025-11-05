@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect, get_object_or_404, resolve_url
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseServerError, HttpResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Count
 from django.utils import timezone
@@ -15,6 +16,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.db.models import Q
 
+from .services.reports.registry import get_report
 
 from .models import (
     Pelicula,
@@ -492,3 +494,48 @@ def api_info(request):
         "sample_movies_url": f'{endpoints["movies"]}?limit=12',
     }
     return render(request, "moviegame/api_info.html", ctx)
+
+# ---------------- API DE ALIADOS ----------------------
+
+API_BASE = "https://ctrlstore-service-420478585093.us-central1.run.app"
+IN_STOCK_URL = f"{API_BASE}/api/products/in-stock/"
+
+def productos_aliados(request):
+    # Permite filtrar destacados vía ?featured=true
+    params = {}
+    featured = request.GET.get("featured")
+    if featured in ("true", "1", "yes"):
+        params["featured"] = featured
+
+    try:
+        r = requests.get(IN_STOCK_URL, params=params, timeout=8)
+        r.raise_for_status()
+        data = r.json()
+        products = data.get("results", [])[:100]  # el endpoint ya limita a 100
+        # Construir URL absoluta de detalle
+        for p in products:
+            rel = p.get("detail_url") or ""
+            p["detail_absolute"] = f"{API_BASE}{rel}"
+        context = {
+            "products": products,
+            "featured": bool(params.get("featured")),
+        }
+        return render(request, "moviegame/aliados.html", {"products": products, "featured": "featured" in params})
+
+    except requests.RequestException as e:
+        # Puedes registrar el error con logging
+        return HttpResponseServerError("No fue posible cargar los productos aliados.")
+
+
+def export_peliculas(request):
+    fmt = request.GET.get("format", "csv")  # csv | pdf
+    qs = Pelicula.objects.order_by("id")    # política de negocio
+    generator = get_report(fmt)             # aquí invertimos dependencia
+    payload = generator.generate(qs)
+
+    resp = HttpResponse(payload, content_type=generator.content_type)
+    resp["Content-Disposition"] = f'attachment; filename=peliculas.{generator.extension}'
+    return resp
+
+
+
