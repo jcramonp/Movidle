@@ -10,8 +10,23 @@ echo "DATABASE_URL present? $( [ -n "$DATABASE_URL" ] && echo yes || echo no )"
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
-if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_EMAIL" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
-  python manage.py createsuperuser --noinput || true
+# Crear/actualizar superusuario (idempotente)
+if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
+python - <<'PY'
+from django.contrib.auth import get_user_model
+import os
+User = get_user_model()
+username = os.environ["DJANGO_SUPERUSER_USERNAME"]
+email = os.environ.get("DJANGO_SUPERUSER_EMAIL","")
+password = os.environ["DJANGO_SUPERUSER_PASSWORD"]
+
+u, created = User.objects.get_or_create(username=username, defaults={"email": email})
+u.is_superuser = True
+u.is_staff = True
+u.set_password(password)  # <-- fuerza/actualiza la contraseña
+u.save()
+print("Superuser", "created" if created else "updated")
+PY
 fi
 
 # Logs a stdout/stderr y puerto 8000
