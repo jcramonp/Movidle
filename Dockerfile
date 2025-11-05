@@ -1,6 +1,9 @@
 # Dockerfile
 FROM python:3.11-slim
 
+ENV DJANGO_SETTINGS_MODULE=movidle.settings \
+    PYTHONPATH=/app
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
