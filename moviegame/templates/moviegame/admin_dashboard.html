@@ -29,7 +29,6 @@ async function setDaily(id){
   const r = await fetch("{% url 'moviegame:admin_set_daily' %}", {
     method:"POST", headers:{"X-CSRFToken":getCookie("csrftoken")}, body:data
   });
-  // si la vista redirige, seguimos su redirección (tu comportamiento actual)
   if(r.redirected){ window.location = r.url; } else { location.reload(); }
 }
 
@@ -39,7 +38,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const q = e.target.value.trim();
     renderSuggest(await autocomplete(q));
   });
-  // cerrar lista al hacer click fuera
   document.addEventListener("click",(ev)=>{
     const box = document.querySelector(".search-wrap");
     if(!box?.contains(ev.target)){
@@ -56,7 +54,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 /* Contenedor del panel */
 .admin-shell{ max-width: 980px; margin: 0 auto; }
 
-/* Tarjeta roja principal (manteniendo tu .card.red) */
+/* Tarjeta roja principal */
 .card.red{
   background: var(--brand);
   color: #fff;
@@ -67,15 +65,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
 }
 
 /* Cabecera dentro de la card */
-.card.red h2{
-  margin: 0 0 6px;
-  font-weight: 800;
-  letter-spacing: .2px;
-}
-.daily-meta{
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-  margin-bottom: 10px;
-}
+.card.red h2{ margin: 0 0 6px; font-weight: 800; letter-spacing: .2px; }
+.daily-meta{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 10px; }
 .daily-chip{
   background: rgba(255,255,255,.18);
   border: 1px solid rgba(255,255,255,.35);
@@ -83,10 +74,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 }
 
 /* Título actual */
-.daily-current{
-  margin: 4px 0 14px;
-  font-weight: 800;
-}
+.daily-current{ margin: 4px 0 14px; font-weight: 800; }
 .daily-current b{ color:#fff; }
 
 /* Buscador (píldora) */
@@ -94,36 +82,37 @@ document.addEventListener("DOMContentLoaded", ()=>{
 .search-wrap input{
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #ffd0cb;        /* suave, combina con el rojo */
-  border-radius: 999px;              /* pill */
-  background: #fff;
-  color: var(--ink);
+  border: 1px solid #ffd0cb;
+  border-radius: 999px;
+  background: #fff; color: var(--ink);
   outline: none;
   transition: box-shadow .15s ease, border-color .15s ease;
 }
-.search-wrap input:focus{
-  border-color: var(--brand);
-  box-shadow: 0 0 0 3px rgba(255,90,78,.25);
-}
+.search-wrap input:focus{ border-color: var(--brand); box-shadow: 0 0 0 3px rgba(255,90,78,.25); }
 
 /* Lista de sugerencias */
 .suggest{
   position: absolute; left:0; right:0; top: calc(100% + 6px);
   background: #fff; border: 1px solid var(--border);
   border-radius: 12px; overflow: hidden;
-  box-shadow: 0 14px 36px rgba(16,24,40,.12);
-  z-index: 20;
+  box-shadow: 0 14px 36px rgba(16,24,40,.12); z-index: 20;
 }
 .suggest.hidden{ display:none; }
-.suggest .opt{
-  padding: 10px 12px; cursor: pointer;
-  border-top: 1px solid #f1f5f9;
-}
+.suggest .opt{ padding: 10px 12px; cursor: pointer; border-top: 1px solid #f1f5f9; }
 .suggest .opt:first-child{ border-top: 0; }
 .suggest .opt:hover{ background: #f8fafc; }
 
 /* Texto secundario dentro de la card roja */
 .card.red .muted{ color: rgba(255,255,255,.85); }
+
+/* Botonera de exportación */
+.export-actions{ margin: 14px 0 4px; display:flex; gap:.5rem; flex-wrap:wrap; }
+.dl-btn{
+  display:inline-flex; align-items:center; gap:.5rem;
+  padding:10px 14px; border-radius:10px; font-weight:700; text-decoration:none;
+}
+.dl-btn.primary{ background:#111827; color:#fff; }
+.dl-btn.ghost{ background:rgba(255,255,255,.16); color:#fff; border:1px solid rgba(255,255,255,.35); }
 
 /* Responsive */
 @media (max-width:640px){
@@ -152,6 +141,21 @@ document.addEventListener("DOMContentLoaded", ()=>{
       <p class="muted">{% trans "Aún no hay película seleccionada para hoy." %}</p>
     {% endif %}
 
+    <!-- Botonera de exportación -->
+    <div class="export-actions">
+      <a class="dl-btn primary"
+         href="{% url 'moviegame:export_peliculas' %}?format=csv"
+         download>
+        ⬇️ {% trans "Descargar CSV" %}
+      </a>
+      <a class="dl-btn ghost"
+         href="{% url 'moviegame:export_peliculas' %}?format=pdf"
+         download>
+        ⬇️ {% trans "Descargar PDF" %}
+      </a>
+    </div>
+
+    <!-- Buscador para fijar película del día -->
     <div class="search-wrap">
       <input id="titulo"
              placeholder="{% trans 'Buscar película para fijar hoy…' %}"
@@ -161,4 +165,3 @@ document.addEventListener("DOMContentLoaded", ()=>{
   </div>
 </div>
 {% endblock %}
-

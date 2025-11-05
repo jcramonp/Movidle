@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect, get_object_or_404, resolve_url
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseServerError
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseServerError, HttpResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Count
 from django.utils import timezone
@@ -16,6 +16,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.db.models import Q
 
+from .services.reports.registry import get_report
 
 from .models import (
     Pelicula,
@@ -524,3 +525,17 @@ def productos_aliados(request):
     except requests.RequestException as e:
         # Puedes registrar el error con logging
         return HttpResponseServerError("No fue posible cargar los productos aliados.")
+
+
+def export_peliculas(request):
+    fmt = request.GET.get("format", "csv")  # csv | pdf
+    qs = Pelicula.objects.order_by("id")    # política de negocio
+    generator = get_report(fmt)             # aquí invertimos dependencia
+    payload = generator.generate(qs)
+
+    resp = HttpResponse(payload, content_type=generator.content_type)
+    resp["Content-Disposition"] = f'attachment; filename=peliculas.{generator.extension}'
+    return resp
+
+
+
