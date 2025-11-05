@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-05 01:56-0500\n"
+"POT-Creation-Date: 2025-11-05 02:21-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -212,24 +212,23 @@ msgid "La película de hoy es..."
 msgstr "Today's movie is..."
 
 #: .\moviegame\templates\moviegame\home.html:9
+#, fuzzy
+#| msgid "Movidle – Adivina la película del día"
 msgid "Movidle – Adivina la película del día"
-msgstr "Movidle - Guess the movie of the day"
+msgstr "Guess the movie of the day"
 
 #: .\moviegame\templates\moviegame\home.html:26
 msgid "m o v i d l e"
 msgstr ""
 
-# #################################################
 #: .\moviegame\templates\moviegame\home.html:28
 #, fuzzy
-#| msgid "Película del día"
+#| msgid "Movidle – Adivina la película del día"
 msgid "Adivina la película del día"
-msgstr "Movie of the day"
+msgstr "Guess the movie of the day"
 
 #: .\moviegame\templates\moviegame\home.html:30
 #: .\moviegame\templates\moviegame\home.html:85
-#, fuzzy
-#| msgid "Jugar"
 msgid "Jugar ahora"
 msgstr "Play now"
 
