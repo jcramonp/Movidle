@@ -31,5 +31,6 @@ urlpatterns = [
     ),
     path("api/public/movies/", views.api_public_movies, name="api_public_movies"),
     path("api-info/", api_info, name="api_info"),
+    path("productos-aliados/", views.productos_aliados, name="productos_aliados"),
 
 ]

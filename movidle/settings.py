@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "moviegame.apps.MoviegameConfig",
+    "django.contrib.humanize",
 ]
 
 MIDDLEWARE = [

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-05 01:30-0500\n"
+"POT-Creation-Date: 2025-11-05 01:56-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,6 +36,28 @@ msgstr "There is no movie selected for today yet."
 #: .\moviegame\templates\moviegame\admin_dashboard.html:157
 msgid "Buscar película para fijar hoy…"
 msgstr "Search a movie to set for today…"
+
+#: .\moviegame\templates\moviegame\aliados.html:6
+msgid "Productos de Aliados"
+msgstr "products from Partners"
+
+#: .\moviegame\templates\moviegame\aliados.html:11
+msgid "Solo destacados"
+msgstr "only featured"
+
+#: .\moviegame\templates\moviegame\aliados.html:13
+#, fuzzy
+#| msgid "API pública"
+msgid "Aplicar"
+msgstr "Public API"
+
+#: .\moviegame\templates\moviegame\aliados.html:26
+msgid "Ver detalle →"
+msgstr "see details →"
+
+#: .\moviegame\templates\moviegame\aliados.html:32
+msgid "No hay productos disponibles en este momento."
+msgstr "there are no products available at this time."
 
 #: .\moviegame\templates\moviegame\api_info.html:4
 #: .\moviegame\templates\moviegame\api_info.html:34
@@ -148,7 +170,7 @@ msgid "Panel"
 msgstr "Admin"
 
 #: .\moviegame\templates\moviegame\base.html:22
-#: .\moviegame\templates\moviegame\base.html:49
+#: .\moviegame\templates\moviegame\base.html:50
 msgid "Salir"
 msgstr "Log out"
 
@@ -158,17 +180,21 @@ msgstr "Log out"
 msgid "Cómo jugar"
 msgstr "How to play"
 
-#: .\moviegame\templates\moviegame\base.html:47
+#: .\moviegame\templates\moviegame\base.html:45
+msgid "Aliados"
+msgstr "Partners"
+
+#: .\moviegame\templates\moviegame\base.html:48
 #, fuzzy
 #| msgid "Estadisticas"
 msgid "Estadísticas"
 msgstr "Stats"
 
-#: .\moviegame\templates\moviegame\base.html:52
+#: .\moviegame\templates\moviegame\base.html:53
 msgid "Entrar"
 msgstr "Log me in"
 
-#: .\moviegame\templates\moviegame\base.html:53
+#: .\moviegame\templates\moviegame\base.html:54
 msgid "Registro"
 msgstr "Sign up"
 

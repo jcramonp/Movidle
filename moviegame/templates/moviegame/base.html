@@ -42,6 +42,7 @@
         <div class="nav-pill">
           <a class="nav-link" href="{% url 'moviegame:howto' %}">{% trans "Cómo jugar" %}</a>
           <a class="nav-link" href="{% url 'moviegame:api_info' %}">API</a>
+          <a class="nav-link" href="{% url 'moviegame:productos_aliados' %}">{% trans "Aliados" %}</a>
 
           {% if user.is_authenticated %}
             <a class="nav-link" href="{% url 'moviegame:stats' %}">{% trans "Estadísticas" %}</a>
