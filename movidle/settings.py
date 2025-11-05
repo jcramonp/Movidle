@@ -128,6 +128,7 @@ USE_L10N = True
 LANGUAGES = [
     ("es", "Español"),
     ("en", "English"),
+    ('de', 'German'),
 ]
 
 from pathlib import Path
